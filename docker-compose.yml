@@ -7,8 +7,12 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    depends_on:
+      - db
+    env_file:
+      - backend/.env
 
-  frontend:
+  frontend:  # ← インデントミス修正（先頭に余分なスペースがあった）
     build: ./frontend
     ports:
       - "3000:3000"
@@ -17,3 +21,18 @@ services:
       - /app/node_modules
     working_dir: /app
     command: npm run dev
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
