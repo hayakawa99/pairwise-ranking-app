@@ -15,22 +15,29 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 # --- DB初期化（リトライ付き） ---
+from sqlalchemy import text
+
 def init_db():
     print("main.py start")
-    for i in range(10):
+    for i in range(30):
         try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
             Base.metadata.create_all(bind=engine)
             print("✅ DB初期化成功")
             return
-        except OperationalError:
-            print(f"⏳ DB接続待機中... ({i+1}/10)")
-            time.sleep(1)
+        except OperationalError as e:
+            print(f"⏳ DB接続待機中... ({i+1}/30)")
+            print(str(e))
+            time.sleep(2)
     raise Exception("❌ DB起動を待てずタイムアウト")
 
-init_db()  # ← これが必須
-
-# --- FastAPIアプリ ---
 app = FastAPI()
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
