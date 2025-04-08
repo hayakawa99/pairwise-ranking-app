@@ -8,11 +8,12 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - backend/.env
 
-  frontend:  # ← インデントミス修正（先頭に余分なスペースがあった）
+  frontend:
     build: ./frontend
     ports:
       - "3000:3000"
@@ -33,6 +34,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:
