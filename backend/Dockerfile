@@ -4,6 +4,12 @@ WORKDIR /app
 
 COPY ./app /app
 
-RUN pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    sqlalchemy \
+    psycopg2-binary \
+    python-dotenv \
+    alembic
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
