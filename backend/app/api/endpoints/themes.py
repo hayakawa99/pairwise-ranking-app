@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from ..schemas import Theme
-from ..models.theme import ThemeORM
-from ..models.option import OptionORM
-from ..db import get_db
+from app.schemas import Theme
+from app.db.models.theme import ThemeORM
+from app.db.models.option import OptionORM
+from app.db.session import get_db
 
 router = APIRouter(prefix="/api/themes")
 
