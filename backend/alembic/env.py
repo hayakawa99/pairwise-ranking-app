@@ -22,7 +22,10 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from app.models import Base
+from app.db.base import Base
+from app.db.models.option import OptionORM
+from app.db.models.theme import ThemeORM
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
