@@ -1,8 +1,10 @@
 from app.db.base import Base
-from .theme import ThemeORM
-from .option import OptionORM
+from .theme import Theme
+from .option import Option
+from .comparison import Comparison
 
 __all__ = [
-  "ThemeORM",
-  "OptionORM"
-  ]
+    "Theme",
+    "Option",
+    "Comparison",
+]
