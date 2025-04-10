@@ -20,7 +20,7 @@ export default function Home() {
   const [optB, setOptB] = useState("");
 
   useEffect(() => {
-    fetch("http://backend:8000/api/themes")
+    fetch("/api/themes")
       .then((res) => res.json())
       .then((data) => setThemes(data))
       .catch((error) => console.error("Fetch error:", error));
@@ -35,7 +35,7 @@ export default function Home() {
         { id: 2, label: optB, rating: 1500 },
       ],
     };
-    await fetch("http://backend:8000/api/themes", {
+    await fetch("/api/themes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTheme),
