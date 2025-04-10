@@ -7,3 +7,7 @@ class Option(BaseModel):
 
     class Config:
         orm_mode = True
+
+class OptionCreate(BaseModel):
+    label: str
+    rating: float
