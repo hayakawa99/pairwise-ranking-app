@@ -1,10 +1,11 @@
 #DB 変更手順(多分)
 
-- backend/app/db/models/(変更する場所).py
-- に変更内容を書く
-
 - docker のコンテナ？に入る
-  docker exec -it pairwise-ranking-app_backend_1 bash
+  <!-- docker exec -it pairwise-ranking-app_backend_1 bash -->
+  docker exec -it pairwise-ranking-app-backend-1 bash
+
+
+- backend/app/db/models/(変更する場所).pyに変更内容を書く
 
 - コンテナ内で以下のコマンド
 
