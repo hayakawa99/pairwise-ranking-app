@@ -19,6 +19,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ここで "/api" を prefix として付与するので、
+    # api_router側に "/themes" があれば最終的に "/api/themes" となります
     app.include_router(api_router, prefix="/api")
 
     return app
