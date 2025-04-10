@@ -3,5 +3,6 @@ from .theme import ThemeORM
 from .option import OptionORM
 
 __all__ = [
-  "ThemeORM", "OptionORM"
+  "ThemeORM",
+  "OptionORM"
   ]
