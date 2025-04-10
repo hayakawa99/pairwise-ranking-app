@@ -1,16 +1,4 @@
-from pydantic import BaseModel
-from typing import List
+from .theme import Theme
+from .option import Option
 
-class Option(BaseModel):
-    id: int
-    label: str
-    rating: float
-    class Config:
-        orm_mode = True
-
-class Theme(BaseModel):
-    id: int
-    title: str
-    options: List[Option]
-    class Config:
-        orm_mode = True
+__all__ = ["Theme", "Option"]
