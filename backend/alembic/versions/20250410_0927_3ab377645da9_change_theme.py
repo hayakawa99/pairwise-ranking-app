@@ -33,8 +33,6 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
                existing_server_default=sa.text('now()'))
-    op.create_index(op.f('ix_themes_id'), 'themes', ['id'], unique=False)
-    op.drop_column('themes', 'label')
     # ### end Alembic commands ###
 
 
