@@ -91,7 +91,7 @@ export default function Home() {
         {themes.map((t) => (
           <li key={t.id}>
             <strong>{t.title}</strong> :{" "}
-            {t.options.map((o) => o.label).join(" vs ")}
+            {t.options?.map((o) => o.label).join(" vs ")} {/* ✅ 修正 */}
           </li>
         ))}
       </ul>
