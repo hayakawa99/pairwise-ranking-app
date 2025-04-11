@@ -1,0 +1,68 @@
+/* ThemePage.module.css */
+.container {
+    padding: 2rem;
+    background-color: #f4f4f9;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 8px;
+    min-height: 100vh;  /* 最低でも画面の高さに合わせる */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  /* 垂直方向に中央寄せ */
+    align-items: center;  /* 水平方向に中央寄せ */
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    color: #555;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .optionsContainer {
+    text-align: center;
+  }
+  
+  .optionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;  /* ボタン間のスペース */
+  }
+  
+  .optionButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .optionButton:hover {
+    background-color: #45a049;
+  }
+  
+  .vs {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0 1rem;  /* ボタンとの間隔 */
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  

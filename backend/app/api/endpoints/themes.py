@@ -30,3 +30,29 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=List[ThemeRead])
 def list_themes(db: Session = Depends(get_db)):
     return db.query(Theme).all()
+
+@router.get("/{id}", response_model=ThemeRead)
+def get_theme(id: int, db: Session = Depends(get_db)):
+    theme = db.query(Theme).filter(Theme.id == id).first()
+    if not theme:
+        raise HTTPException(status_code=404, detail="Theme not found")
+    return theme
+
+@router.post("/{id}/vote")
+def vote(id: int, selected_option: str, db: Session = Depends(get_db)):
+    try:
+        theme = db.query(Theme).filter(Theme.id == id).first()
+        if not theme:
+            raise HTTPException(status_code=404, detail="Theme not found")
+
+        option = db.query(Option).filter(Option.label == selected_option, Option.theme_id == id).first()
+        if not option:
+            raise HTTPException(status_code=404, detail="Option not found")
+
+        # Eloレーティングの更新処理などをここに記載
+
+        db.commit()
+        return {"status": "ok"}
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
