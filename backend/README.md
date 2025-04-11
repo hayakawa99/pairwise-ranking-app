@@ -14,3 +14,6 @@
 
 - 反映
   alembic upgrade head
+
+#seedsを流し込む
+docker exec -it pairwise-ranking-app-backend-1 python app/seeds/seed_data.py
