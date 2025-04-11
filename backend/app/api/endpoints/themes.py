@@ -5,7 +5,7 @@ from typing import List
 
 from app.db.models.theme import Theme
 from app.db.models.option import Option
-from app.schemas.theme import ThemeCreate, ThemeOut
+from app.schemas.theme import ThemeCreate, ThemeRead
 from app.db.session import get_db
 
 # prefixは空にしておく
@@ -27,6 +27,6 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=List[ThemeOut])
+@router.get("", response_model=List[ThemeRead])
 def list_themes(db: Session = Depends(get_db)):
     return db.query(Theme).all()

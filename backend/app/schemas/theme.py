@@ -1,11 +1,11 @@
 from typing import List
 from pydantic import BaseModel
-from .option import Option, OptionCreate  # ✅ ここが修正ポイント
+from .option import OptionRead, OptionCreate  # ✅ ここが修正ポイント
 
-class ThemeOut(BaseModel):
+class ThemeRead(BaseModel):
     id: int
     title: str
-    options: List[Option]
+    options: List[OptionRead]
 
     class Config:
         from_attributes = True  # ✅ Pydantic v2 対応
