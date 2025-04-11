@@ -4,5 +4,6 @@ from .option import OptionCreate,OptionRead
 __all__ = [
   "ThemeCreate",
   "ThemeRead",
-  "Option"
+  "OptionCreate"
+  "OptionRead"
   ]
