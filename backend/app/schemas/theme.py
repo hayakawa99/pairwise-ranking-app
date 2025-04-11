@@ -8,4 +8,4 @@ class Theme(BaseModel):
     options: List[Option]
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # ✅ Pydantic v2対応
