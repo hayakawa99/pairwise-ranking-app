@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 
 type Option = {
-  id: number;
   label: string;
   rating: number;
 };
@@ -18,29 +17,51 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [optA, setOptA] = useState("");
   const [optB, setOptB] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/themes")
-      .then((res) => res.json())
-      .then((data) => setThemes(data))
-      .catch((error) => console.error("Fetch error:", error));
+    const fetchThemes = async () => {
+      try {
+        const res = await fetch("/api/themes");
+        if (!res.ok) {
+          throw new Error('Failed to fetch themes');
+        }
+        const data = await res.json();
+        setThemes(data);
+      } catch (error) {
+        setError('Error fetching themes');
+        console.error("Fetch error:", error);
+      }
+    };
+
+    fetchThemes();
   }, []);
 
   const submitTheme = async () => {
-    const newTheme: Theme = {
-      id: Date.now(),
+    const newTheme = {
       title,
       options: [
-        { id: 1, label: optA, rating: 1500 },
-        { id: 2, label: optB, rating: 1500 },
+        { label: optA, rating: 1500 },
+        { label: optB, rating: 1500 },
       ],
     };
-    await fetch("/api/themes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTheme),
-    });
-    location.reload();
+
+    try {
+      const res = await fetch("/api/themes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTheme),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to submit theme');
+      }
+
+      const createdTheme = await res.json();
+      setThemes((prevThemes) => [...prevThemes, createdTheme]);
+    } catch (error) {
+      setError('Error submitting theme');
+      console.error("Submit error:", error);
+    }
   };
 
   return (
@@ -62,6 +83,8 @@ export default function Home() {
         onChange={(e) => setOptB(e.target.value)}
       />
       <button onClick={submitTheme}>送信</button>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <h2>登録済みのお題</h2>
       <ul>
