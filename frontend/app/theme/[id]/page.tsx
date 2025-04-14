@@ -35,14 +35,12 @@ const ThemePage = () => {
           }
         }
 
-        // レート差に基づいた重み付け
         const weightedPairs = pairs.map(pair => {
           const diff = Math.abs(pair[0].rating - pair[1].rating);
-          const weight = 1 / (diff + 1); // 差が小さいほど重み大
+          const weight = 1 / (diff + 1);
           return { pair, weight };
         });
 
-        // 重み付きランダム抽出（without replacement）
         const sampledPairs: [Option, Option][] = [];
         const used = new Set<number>();
 
@@ -110,12 +108,12 @@ const ThemePage = () => {
     <main className={styles.container}>
       <h1 className={styles.title}>{theme.title}</h1>
       <div className={styles.optionsContainer}>
-        <h2 className={styles.subtitle}>どちらが良いですか？（残り {remainingPairs.length}）</h2>
+        <h2 className={styles.subtitle}>あなたならどっち？</h2>
         <div className={styles.optionButtons}>
           <button onClick={() => handleVote(optionA, optionB)} className={styles.optionButton}>
             {optionA.label}
           </button>
-          <span className={styles.vs}> vs </span>
+          <div className={styles.vs}>vs</div>
           <button onClick={() => handleVote(optionB, optionA)} className={styles.optionButton}>
             {optionB.label}
           </button>

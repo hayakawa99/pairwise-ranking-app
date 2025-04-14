@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import styles from './MainPage.module.css';
+import styles from "./page.module.css";
 
 type Theme = {
   id: number;
@@ -18,12 +18,12 @@ export default function MainPage() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`);
         if (!res.ok) {
-          throw new Error('Failed to fetch themes');
+          throw new Error("Failed to fetch themes");
         }
         const data = await res.json();
         setThemes(data);
       } catch (error) {
-        setError('Error fetching themes');
+        setError("Error fetching themes");
         console.error("Fetch error:", error);
       }
     };
@@ -35,12 +35,13 @@ export default function MainPage() {
     <main className={styles.container}>
       <h1 className={styles.heading}>Pairwise Ranking</h1>
 
-      <button
+      {/* ✅ 管理者用ボタンは非表示にする（または一時的にコメントアウト） */}
+      {/* <button
         className={styles.createButton}
-        onClick={() => router.push("/create-topic")}
+        onClick={() => router.push("/admin/create-topic")}
       >
         お題作成
-      </button>
+      </button> */}
 
       {error && <p className={styles.error}>{error}</p>}
 
@@ -52,7 +53,6 @@ export default function MainPage() {
               key={theme.id}
               className={styles.themeCard}
               onClick={() => router.push(`/theme/${theme.id}`)}
-              style={{ cursor: "pointer" }} // マウスオーバーでわかりやすく
             >
               <h3 className={styles.themeTitle}>{theme.title}</h3>
             </div>

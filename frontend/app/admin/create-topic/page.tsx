@@ -1,13 +1,22 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // useRouterでページ遷移
-import styles from './CreateTopicPage.module.css';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./AdminCreateTopicPage.module.css";
 
-const CreateTopicPage = () => {
+const AdminCreateTopicPage = () => {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [options, setOptions] = useState(["", ""]); // 最初の選択肢2つ
+  const [options, setOptions] = useState(["", ""]);
   const [newOption, setNewOption] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const allowedPaths = ["/admin/create-topic"];
+    const isAdmin = typeof window !== "undefined" && allowedPaths.includes(window.location.pathname);
+    if (!isAdmin) {
+      router.push("/");
+    }
+  }, [router]);
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -24,13 +33,13 @@ const CreateTopicPage = () => {
       return;
     }
     setOptions([...options, trimmed]);
-    setNewOption(""); // 新しい選択肢入力をリセット
+    setNewOption("");
   };
 
   const handleSubmit = async () => {
     const newTheme = {
       title,
-      options: options.map(opt => ({ label: opt, rating: 1500 })),
+      options: options.map((opt) => ({ label: opt, rating: 1500 })),
     };
 
     try {
@@ -40,54 +49,58 @@ const CreateTopicPage = () => {
         body: JSON.stringify(newTheme),
       });
       if (res.ok) {
-        router.push("/");  // 成功したらメインページに戻る
+        router.push("/");
       } else {
-        alert("Failed to submit theme");
+        setError("テーマの送信に失敗しました");
       }
     } catch (error) {
-      alert("Error submitting theme");
+      setError("通信エラーが発生しました");
       console.error("Submit error:", error);
     }
   };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>Create Topic</h1>
+      <h1 className={styles.heading}>Create Topic (Admin Only)</h1>
+
+      {error && <p className={styles.error}>{error}</p>}
 
       <label className={styles.label}>Title</label>
-      <input 
+      <input
         className={styles.inputField}
-        type="text" 
-        placeholder="Title" 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
       />
 
       <label className={styles.label}>Options</label>
       {options.map((option, index) => (
         <div key={index} className={styles.optionRow}>
-          <input 
+          <input
             className={styles.inputField}
-            type="text" 
-            placeholder="Option" 
-            value={option} 
-            onChange={(e) => handleOptionChange(index, e.target.value)} 
+            type="text"
+            placeholder="Option"
+            value={option}
+            onChange={(e) => handleOptionChange(index, e.target.value)}
           />
         </div>
       ))}
-      
+
       <div className={styles.addOption}>
-        <input 
+        <input
           className={styles.inputField}
-          type="text" 
-          placeholder="Add option" 
-          value={newOption} 
-          onChange={(e) => setNewOption(e.target.value)} 
+          type="text"
+          placeholder="Add option"
+          value={newOption}
+          onChange={(e) => setNewOption(e.target.value)}
         />
         <button onClick={handleAddOption}>Add option</button>
       </div>
-      
-      <button className={styles.submitButton} onClick={handleSubmit}>Create</button>
+
+      <button className={styles.submitButton} onClick={handleSubmit}>
+        Create
+      </button>
 
       <div className={styles.backButtonWrapper}>
         <button className={styles.backButton} onClick={() => router.push("/")}>戻る</button>
@@ -96,4 +109,4 @@ const CreateTopicPage = () => {
   );
 };
 
-export default CreateTopicPage;
+export default AdminCreateTopicPage;
