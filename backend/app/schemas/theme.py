@@ -13,3 +13,6 @@ class ThemeRead(BaseModel):
 class ThemeCreate(BaseModel):
     title: str
     options: List[OptionCreate]
+
+class VoteRequest(BaseModel):
+    selected_option_id: int

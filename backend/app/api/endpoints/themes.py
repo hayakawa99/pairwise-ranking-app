@@ -5,10 +5,10 @@ from typing import List
 
 from app.db.models.theme import Theme
 from app.db.models.option import Option
-from app.schemas.theme import ThemeCreate, ThemeRead
+from app.schemas.theme import ThemeCreate, ThemeRead, VoteRequest
 from app.db.session import get_db
+from sqlalchemy.sql import func
 
-# prefixは空にしておく
 router = APIRouter()
 
 @router.post("")
@@ -16,7 +16,7 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
     try:
         theme_orm = Theme(title=theme.title)
         db.add(theme_orm)
-        db.flush()  # ← theme_orm.id を確定させる
+        db.flush()
 
         for opt in theme.options:
             db.add(Option(label=opt.label, rating=opt.rating, theme_id=theme_orm.id))
@@ -39,17 +39,20 @@ def get_theme(id: int, db: Session = Depends(get_db)):
     return theme
 
 @router.post("/{id}/vote")
-def vote(id: int, selected_option: str, db: Session = Depends(get_db)):
+def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
     try:
-        theme = db.query(Theme).filter(Theme.id == id).first()
-        if not theme:
-            raise HTTPException(status_code=404, detail="Theme not found")
+        theme, selected = Theme.get_theme_and_option_or_404(db, theme_id=id, option_id=request.selected_option_id)
 
-        option = db.query(Option).filter(Option.label == selected_option, Option.theme_id == id).first()
-        if not option:
-            raise HTTPException(status_code=404, detail="Option not found")
+        opponent = (
+            db.query(Option)
+            .filter(Option.theme_id == id, Option.id != selected.id)
+            .order_by(func.random())
+            .first()
+        )
+        if not opponent:
+            raise HTTPException(status_code=400, detail="No opponent to compare")
 
-        # Eloレーティングの更新処理などをここに記載
+        Option.update_elo_ratings(winner=selected, loser=opponent)
 
         db.commit()
         return {"status": "ok"}
