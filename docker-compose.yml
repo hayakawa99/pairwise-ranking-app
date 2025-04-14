@@ -7,11 +7,15 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./backend/.env:/app/.env
+      - ./backend/.env.test:/app/.env.test
+      - ./backend/entrypoint.sh:/app/entrypoint.sh
     depends_on:
       db:
         condition: service_healthy
     env_file:
       - backend/.env
+      - backend/.env.test
 
   frontend:
     build: ./frontend
