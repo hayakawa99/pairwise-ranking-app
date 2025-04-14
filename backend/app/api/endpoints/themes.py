@@ -66,3 +66,13 @@ def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{id}")
+def delete_theme(id: int, db: Session = Depends(get_db)):
+    theme = db.query(Theme).filter(Theme.id == id).first()
+    if not theme:
+        raise HTTPException(status_code=404, detail="Theme not found")
+
+    db.delete(theme)
+    db.commit()
+    return {"status": "deleted"}

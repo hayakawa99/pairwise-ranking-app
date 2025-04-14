@@ -34,13 +34,37 @@ const ThemePage = () => {
             pairs.push([options[i], options[j]]);
           }
         }
-        for (let i = pairs.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+
+        // レート差に基づいた重み付け
+        const weightedPairs = pairs.map(pair => {
+          const diff = Math.abs(pair[0].rating - pair[1].rating);
+          const weight = 1 / (diff + 1); // 差が小さいほど重み大
+          return { pair, weight };
+        });
+
+        // 重み付きランダム抽出（without replacement）
+        const sampledPairs: [Option, Option][] = [];
+        const used = new Set<number>();
+
+        while (sampledPairs.length < weightedPairs.length) {
+          const totalWeight = weightedPairs.reduce((acc, e, i) => {
+            return used.has(i) ? acc : acc + e.weight;
+          }, 0);
+
+          let r = Math.random() * totalWeight;
+          for (let i = 0; i < weightedPairs.length; i++) {
+            if (used.has(i)) continue;
+            r -= weightedPairs[i].weight;
+            if (r <= 0) {
+              sampledPairs.push(weightedPairs[i].pair);
+              used.add(i);
+              break;
+            }
+          }
         }
 
-        setRemainingPairs(pairs);
-        setCurrentPair(pairs[0]);
+        setRemainingPairs(sampledPairs);
+        setCurrentPair(sampledPairs[0]);
       } catch (error) {
         setError("Error fetching theme");
         console.error("Fetch error:", error);
@@ -62,7 +86,7 @@ const ThemePage = () => {
 
       const nextPairs = remainingPairs.slice(1);
       setHasVotedOnce(true);
-      sessionStorage.setItem(`voted-theme-${id}`, "1"); // ✅ 投票済みフラグを保存
+      sessionStorage.setItem(`voted-theme-${id}`, "1");
 
       if (nextPairs.length > 0) {
         setRemainingPairs(nextPairs);
