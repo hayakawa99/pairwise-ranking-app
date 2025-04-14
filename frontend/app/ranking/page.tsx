@@ -13,11 +13,18 @@ export default function RankingPage() {
   useEffect(() => {
     if (!themeId) return;
 
+    // ✅ sessionStorage に投票フラグがなければ強制リダイレクト
+    const voted = sessionStorage.getItem(`voted-theme-${themeId}`);
+    if (!voted) {
+      router.replace(`/theme/${themeId}`);
+      return;
+    }
+
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes/${themeId}`)
       .then(res => res.json())
       .then(setTheme)
       .catch(err => console.error('ランキング取得失敗', err));
-  }, [themeId]);
+  }, [themeId, router]);
 
   if (!theme) return <p>Loading...</p>;
 
