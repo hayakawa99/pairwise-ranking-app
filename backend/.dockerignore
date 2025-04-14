@@ -5,5 +5,7 @@ __pycache__/
 *.log
 .venv/
 .env
+.env.test
 .git/
 *.sqlite3
+entrypoint.sh
