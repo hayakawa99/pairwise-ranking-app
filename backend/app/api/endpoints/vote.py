@@ -3,13 +3,18 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db.models.option import Option
 from app.core.elo import update_elo
+from pydantic import BaseModel
 
 router = APIRouter()
 
+class VoteRequest(BaseModel):
+    winner_id: int
+    loser_id: int
+
 @router.post("/vote")
-def vote(winner_id: int, loser_id: int, db: Session = Depends(get_db)):
-    winner = db.query(Option).filter(Option.id == winner_id).with_for_update().first()
-    loser = db.query(Option).filter(Option.id == loser_id).with_for_update().first()
+def vote(request: VoteRequest, db: Session = Depends(get_db)):
+    winner = db.query(Option).filter(Option.id == request.winner_id).with_for_update().first()
+    loser = db.query(Option).filter(Option.id == request.loser_id).with_for_update().first()
 
     if not winner or not loser:
         raise HTTPException(status_code=400, detail="選択肢が存在しません")
