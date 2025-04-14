@@ -7,7 +7,6 @@ from app.db.models.theme import Theme
 from app.db.models.option import Option
 from app.schemas.theme import ThemeCreate, ThemeRead, VoteRequest
 from app.db.session import get_db
-from sqlalchemy.sql import func
 
 router = APIRouter()
 
@@ -41,18 +40,26 @@ def get_theme(id: int, db: Session = Depends(get_db)):
 @router.post("/{id}/vote")
 def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
     try:
-        theme, selected = Theme.get_theme_and_option_or_404(db, theme_id=id, option_id=request.selected_option_id)
+        theme = db.query(Theme).filter(Theme.id == id).first()
+        if not theme:
+            raise HTTPException(status_code=404, detail="Theme not found")
 
-        opponent = (
-            db.query(Option)
-            .filter(Option.theme_id == id, Option.id != selected.id)
-            .order_by(func.random())
-            .first()
-        )
-        if not opponent:
-            raise HTTPException(status_code=400, detail="No opponent to compare")
+        options = theme.options
+        winners = []
+        losers = []
+        for opt in options:
+            if opt.id == request.selected_option_id:
+                winners.append(opt)
+            else:
+                losers.append(opt)
 
-        Option.update_elo_ratings(winner=selected, loser=opponent)
+        if not winners or not losers:
+            raise HTTPException(status_code=400, detail="選択肢の構造が不正です")
+
+        winner = winners[0]
+        loser = losers[0]
+
+        Option.update_elo_ratings(winner=winner, loser=loser)
 
         db.commit()
         return {"status": "ok"}

@@ -62,12 +62,13 @@ const ThemePage = () => {
 
       const nextPairs = remainingPairs.slice(1);
       setHasVotedOnce(true);
+      sessionStorage.setItem(`voted-theme-${id}`, "1"); // ✅ 投票済みフラグを保存
 
       if (nextPairs.length > 0) {
         setRemainingPairs(nextPairs);
         setCurrentPair(nextPairs[0]);
       } else {
-        router.push(`/ranking?themeId=${id}`); // ✅ 修正済：直前のテーマIDで遷移
+        router.push(`/ranking?themeId=${id}`);
       }
     } catch (error) {
       setError("Error submitting vote");
