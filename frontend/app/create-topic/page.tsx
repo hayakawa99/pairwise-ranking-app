@@ -16,7 +16,14 @@ const CreateTopicPage = () => {
   };
 
   const handleAddOption = () => {
-    setOptions([...options, newOption]);
+    const trimmed = newOption.trim();
+    if (!trimmed) return;
+    if (options.includes(trimmed)) {
+      alert("同じ名前の選択肢は追加できません");
+      setNewOption("");
+      return;
+    }
+    setOptions([...options, trimmed]);
     setNewOption(""); // 新しい選択肢入力をリセット
   };
 
@@ -47,10 +54,9 @@ const CreateTopicPage = () => {
     <div className={styles.container}>
       <h1 className={styles.heading}>Create Topic</h1>
 
-      {/* 修正: label にクラスを追加 */}
       <label className={styles.label}>Title</label>
       <input 
-        className={styles.inputField} // input にクラスを適用
+        className={styles.inputField}
         type="text" 
         placeholder="Title" 
         value={title} 
@@ -61,7 +67,7 @@ const CreateTopicPage = () => {
       {options.map((option, index) => (
         <div key={index} className={styles.optionRow}>
           <input 
-            className={styles.inputField} // input にクラスを適用
+            className={styles.inputField}
             type="text" 
             placeholder="Option" 
             value={option} 
@@ -72,7 +78,7 @@ const CreateTopicPage = () => {
       
       <div className={styles.addOption}>
         <input 
-          className={styles.inputField} // input にクラスを適用
+          className={styles.inputField}
           type="text" 
           placeholder="Add option" 
           value={newOption} 
@@ -82,6 +88,10 @@ const CreateTopicPage = () => {
       </div>
       
       <button className={styles.submitButton} onClick={handleSubmit}>Create</button>
+
+      <div className={styles.backButtonWrapper}>
+        <button className={styles.backButton} onClick={() => router.push("/")}>戻る</button>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // useRouterをインポートしてページ遷移を管理
-import styles from './MainPage.module.css'; // 正しいパスでインポート
+import { useRouter } from "next/navigation";
+import styles from './MainPage.module.css';
 
 type Theme = {
   id: number;
@@ -9,7 +9,7 @@ type Theme = {
 };
 
 export default function MainPage() {
-  const router = useRouter(); // useRouter を使用してページ遷移を管理
+  const router = useRouter();
   const [themes, setThemes] = useState<Theme[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export default function MainPage() {
           throw new Error('Failed to fetch themes');
         }
         const data = await res.json();
-        setThemes(data); // テーマデータを設定
+        setThemes(data);
       } catch (error) {
         setError('Error fetching themes');
         console.error("Fetch error:", error);
@@ -33,26 +33,27 @@ export default function MainPage() {
 
   return (
     <main className={styles.container}>
-      {/* タイトル */}
       <h1 className={styles.heading}>Pairwise Ranking</h1>
 
-      {/* お題作成ボタン */}
       <button
         className={styles.createButton}
-        onClick={() => router.push("/create-topic")} // ボタンをクリックしたときにお題作成ページに遷移
+        onClick={() => router.push("/create-topic")}
       >
         お題作成
       </button>
 
-      {/* エラーメッセージ */}
       {error && <p className={styles.error}>{error}</p>}
 
-      {/* お題一覧 */}
       <h2 className={styles.subHeading}>お題一覧</h2>
       <div className={styles.themeList}>
         {themes.length > 0 ? (
           themes.map((theme) => (
-            <div key={theme.id} className={styles.themeCard}>
+            <div
+              key={theme.id}
+              className={styles.themeCard}
+              onClick={() => router.push(`/theme/${theme.id}`)}
+              style={{ cursor: "pointer" }} // マウスオーバーでわかりやすく
+            >
               <h3 className={styles.themeTitle}>{theme.title}</h3>
             </div>
           ))
