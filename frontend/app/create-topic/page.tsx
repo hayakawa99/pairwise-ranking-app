@@ -8,7 +8,7 @@ const CreateTopicPage = () => {
   const [title, setTitle] = useState("");
   const [options, setOptions] = useState(["", ""]); // 最初の選択肢2つ
   const [newOption, setNewOption] = useState("");
-  
+
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
     newOptions[index] = value;
@@ -46,19 +46,22 @@ const CreateTopicPage = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Create Topic</h1>
-      
-      <label>Title</label>
+
+      {/* 修正: label にクラスを追加 */}
+      <label className={styles.label}>Title</label>
       <input 
+        className={styles.inputField} // input にクラスを適用
         type="text" 
         placeholder="Title" 
         value={title} 
         onChange={(e) => setTitle(e.target.value)} 
       />
 
-      <label>Options</label>
+      <label className={styles.label}>Options</label>
       {options.map((option, index) => (
         <div key={index} className={styles.optionRow}>
           <input 
+            className={styles.inputField} // input にクラスを適用
             type="text" 
             placeholder="Option" 
             value={option} 
@@ -69,6 +72,7 @@ const CreateTopicPage = () => {
       
       <div className={styles.addOption}>
         <input 
+          className={styles.inputField} // input にクラスを適用
           type="text" 
           placeholder="Add option" 
           value={newOption} 
