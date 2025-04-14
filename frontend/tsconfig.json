@@ -18,8 +18,10 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".", // ✅ 必須
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@types": ["types/index"] // ✅ より確実な書き方
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.js"],
