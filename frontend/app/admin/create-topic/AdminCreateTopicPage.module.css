@@ -1,0 +1,91 @@
+.container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .heading {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .label {
+    font-size: 1rem;
+    margin-top: 1rem;
+    display: block;
+  }
+  
+  .inputField {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .optionRow {
+    margin-bottom: 1rem;
+  }
+  
+  .addOption {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  
+  .addOption input {
+    width: 80%;
+  }
+  
+  .addOption button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .submitButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    width: 100%;
+    margin-top: 2rem;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .backButtonWrapper {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  
+  .backButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    background-color: #888;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .backButton:hover {
+    background-color: #666;
+  }
+  
+  .error {
+    color: red;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  
