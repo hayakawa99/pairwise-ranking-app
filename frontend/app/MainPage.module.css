@@ -1,0 +1,72 @@
+/* MainPage.module.css */
+.container {
+  padding: 2rem;
+  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* 上部にコンテンツを配置 */
+  min-height: 100vh;
+}
+
+.heading {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2rem; /* タイトルとボタンの間にスペースを追加 */
+}
+
+.createButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+  margin-bottom: 2rem; /* ボタンの下にスペースを追加 */
+}
+
+.createButton:hover {
+  background-color: #45a049;
+}
+
+.subHeading {
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 1.5rem; /* お題一覧の見出しの下にスペースを追加 */
+  font-weight: bold;
+}
+
+.themeList {
+  display: flex;
+  flex-direction: column; /* 縦に並べる */
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 600px; /* 最大幅を設定 */
+}
+
+.themeCard {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
+}
+
+.themeCard:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.themeTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-top: 1rem;
+}

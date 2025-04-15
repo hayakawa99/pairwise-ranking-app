@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Text, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
+import math
 
 class Option(Base):
     __tablename__ = "options"
@@ -18,3 +19,17 @@ class Option(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     theme = relationship("Theme", back_populates="options")
+
+    @staticmethod
+    def update_elo_ratings(winner, loser, k=32):
+        expected_win = 1 / (1 + 10 ** ((loser.rating - winner.rating) / 400))
+        expected_lose = 1 / (1 + 10 ** ((winner.rating - loser.rating) / 400))
+
+        winner.rating += k * (1 - expected_win)
+        loser.rating += k * (0 - expected_lose)
+
+        winner.wins += 1
+        loser.losses += 1
+
+        winner.shown_count += 1
+        loser.shown_count += 1
