@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List
 
@@ -26,9 +26,14 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=List[ThemeRead])
+@router.get("")
 def list_themes(db: Session = Depends(get_db)):
-    return db.query(Theme).all()
+    themes = db.query(Theme).options(joinedload(Theme.options)).all()
+    print("テーマ数:", len(themes))
+    for t in themes:
+        print("ID:", t.id, "タイトル:", t.title, "選択肢:", [o.label for o in t.options])
+    return themes
+
 
 @router.get("/{id}", response_model=ThemeRead)
 def get_theme(id: int, db: Session = Depends(get_db)):
