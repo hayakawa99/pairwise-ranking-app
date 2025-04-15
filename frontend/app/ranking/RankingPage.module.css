@@ -1,8 +1,6 @@
-/* RankingPage.module.css */
-
 .container {
-  padding: 2rem;
-  background-color: #f9f9f9;
+  padding: 3rem 1.5rem 5rem;
+  background-color: #f9fafb;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -10,10 +8,12 @@
 }
 
 .heading {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 1.9rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 1rem;
+  color: #111827;
+  margin-bottom: 2rem;
+  line-height: 1.4;
 }
 
 .backButtonWrapper {
@@ -23,8 +23,8 @@
 
 .backButton {
   padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-  background-color: #888;
+  font-size: 0.95rem;
+  background-color: #6b7280;
   color: white;
   border: none;
   border-radius: 6px;
@@ -33,61 +33,93 @@
 }
 
 .backButton:hover {
-  background-color: #666;
+  background-color: #4b5563;
 }
 
 .rankings {
   width: 100%;
-  max-width: 500px;
+  max-width: 640px;
 }
 
 .themeCard {
   background-color: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
   width: 100%;
 }
 
-.themeTitle {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
 .optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
   margin-top: 1rem;
 }
 
+/* 各ランクカード */
 .optionCard {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  background-color: #fafafa;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rank {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #4caf50;
+.optionCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
+/* ランク番号 */
+.rankIcon {
+  font-size: 1.4rem;
+  font-weight: 700;
+  min-width: 2.5rem;
+  text-align: center;
+  color: #3b82f6;
+}
+
+/* 1〜3位：メダルに変換 */
+.rank-1 .rankIcon {
+  color: #f59e0b;
+}
+.rank-2 .rankIcon {
+  color: #9ca3af;
+}
+.rank-3 .rankIcon {
+  color: #c084fc;
+}
+
+/* 本文テキスト */
 .optionLabel {
-  font-size: 1.2rem;
-  color: #555;
+  font-size: 1.05rem;
+  color: #111827;
+  font-weight: 500;
+  line-height: 1.5;
+  word-break: break-word;
   flex-grow: 1;
-  margin-left: 0.75rem;
 }
 
-.rating {
-  font-size: 1rem;
-  color: #888;
-  font-style: italic;
-  margin-left: 0.5rem;
+/* 投票回数による強調 */
+
+.votedMid {
+  background-color: #dbeafe;
+  border: 2px solid #60a5fa;
+}
+
+.votedStrong {
+  background-color: #bfdbfe;
+  border: 2px solid #3b82f6;
+}
+
+/* 順位テキスト（4位以降） */
+.optionMeta {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+.rankText {
+  font-weight: bold;
 }

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Theme, Option } from "@types";
-import styles from './ThemePage.module.css';
+import styles from "./ThemePage.module.css";
 
 const ThemePage = () => {
   const { id } = useParams();
@@ -14,20 +14,16 @@ const ThemePage = () => {
   const [hasVotedOnce, setHasVotedOnce] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || typeof id !== "string") return;
 
     const fetchTheme = async () => {
       try {
         const res = await fetch(`/api/themes/${id}`);
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error(`Failed to fetch theme: ${res.status} ${res.statusText}, ${errorText}`);
-          throw new Error("Failed to fetch theme");
-        }
+        if (!res.ok) throw new Error("Failed to fetch theme");
         const data = await res.json();
         setTheme(data);
 
-        const options: Option[] = data.options;
+        const options = data.options;
         const pairs: [Option, Option][] = [];
         for (let i = 0; i < options.length; i++) {
           for (let j = i + 1; j < options.length; j++) {
@@ -37,19 +33,14 @@ const ThemePage = () => {
 
         const weightedPairs = pairs.map(pair => {
           const diff = Math.abs(pair[0].rating - pair[1].rating);
-          const weight = 1 / (diff + 1);
-          return { pair, weight };
+          return { pair, weight: 1 / (diff + 1) };
         });
 
         const sampledPairs: [Option, Option][] = [];
         const used = new Set<number>();
-
         while (sampledPairs.length < weightedPairs.length) {
-          const totalWeight = weightedPairs.reduce((acc, e, i) => {
-            return used.has(i) ? acc : acc + e.weight;
-          }, 0);
-
-          let r = Math.random() * totalWeight;
+          const total = weightedPairs.reduce((acc, e, i) => used.has(i) ? acc : acc + e.weight, 0);
+          let r = Math.random() * total;
           for (let i = 0; i < weightedPairs.length; i++) {
             if (used.has(i)) continue;
             r -= weightedPairs[i].weight;
@@ -63,9 +54,9 @@ const ThemePage = () => {
 
         setRemainingPairs(sampledPairs);
         setCurrentPair(sampledPairs[0]);
-      } catch (error) {
+      } catch (err) {
+        console.error("Fetch error:", err);
         setError("Error fetching theme");
-        console.error("Fetch error:", error);
       }
     };
 
@@ -73,6 +64,8 @@ const ThemePage = () => {
   }, [id]);
 
   const handleVote = async (winner: Option, loser: Option) => {
+    if (!id || typeof id !== "string") return;
+
     try {
       const res = await fetch(`/api/vote`, {
         method: "POST",
@@ -86,15 +79,30 @@ const ThemePage = () => {
       setHasVotedOnce(true);
       sessionStorage.setItem(`voted-theme-${id}`, "1");
 
+      // ✅ 安全な投票履歴記録
+      const key = `voted-options-${id}`;
+      let updated: number[] = [];
+
+      try {
+        const prev = sessionStorage.getItem(key);
+        updated = prev ? JSON.parse(prev) : [];
+      } catch (e) {
+        console.warn("投票履歴の読み込みに失敗しました", e);
+        updated = [];
+      }
+
+      updated.push(Number(winner.id));
+      sessionStorage.setItem(key, JSON.stringify(updated));
+
       if (nextPairs.length > 0) {
         setRemainingPairs(nextPairs);
         setCurrentPair(nextPairs[0]);
       } else {
         router.push(`/ranking?themeId=${id}`);
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Vote error:", err);
       setError("Error submitting vote");
-      console.error("Vote error:", error);
     }
   };
 
@@ -107,32 +115,33 @@ const ThemePage = () => {
   return (
     <main className={styles.container}>
       <h1 className={styles.title}>{theme.title}</h1>
-      <div className={styles.optionsContainer}>
-        <h2 className={styles.subtitle}>あなたならどっち？</h2>
-        <div className={styles.optionButtons}>
-          <button onClick={() => handleVote(optionA, optionB)} className={styles.optionButton}>
-            {optionA.label}
-          </button>
-          <div className={styles.vs}>vs</div>
-          <button onClick={() => handleVote(optionB, optionA)} className={styles.optionButton}>
-            {optionB.label}
-          </button>
-        </div>
+      <p className={styles.subtitle}>あなたならどっち？</p>
 
-        {hasVotedOnce && (
-          <div className={styles.rankingLink}>
-            <button onClick={() => router.push(`/ranking?themeId=${id}`)} className={styles.rankingButton}>
-              ランキングを見る
-            </button>
-          </div>
-        )}
-
-        <div className={styles.backButtonWrapper}>
-          <button onClick={() => router.push("/")} className={styles.backButton}>
-            トップページに戻る
-          </button>
-        </div>
+      <div className={styles.options}>
+        <button onClick={() => handleVote(optionA, optionB)} className={styles.option}>
+          {optionA.label}
+        </button>
+        <span className={styles.vs}>vs</span>
+        <button onClick={() => handleVote(optionB, optionA)} className={styles.option}>
+          {optionB.label}
+        </button>
       </div>
+
+      {hasVotedOnce && (
+        <div className={styles.result}>
+          <button onClick={() => router.push(`/ranking?themeId=${id}`)} className={styles.resultButton}>
+            ランキングを見る
+          </button>
+        </div>
+      )}
+
+      <div className={styles.back}>
+        <button onClick={() => router.push("/")} className={styles.backButton}>
+          トップページに戻る
+        </button>
+      </div>
+
+      <img src="/simaenaga2.png" alt="シマエナガ" className={styles.character} />
     </main>
   );
 };
