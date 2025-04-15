@@ -17,6 +17,9 @@ if os.getenv("DATABASE_URL"):
 elif os.getenv("TEST_DATABASE_URL"):
     config.set_main_option("sqlalchemy.url", os.environ["TEST_DATABASE_URL"])
 
+print("database:", os.getenv("DATABASE_URL"))
+print("testdatabase:", os.getenv("TEST_DATABASE_URL"))
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
