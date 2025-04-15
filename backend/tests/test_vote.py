@@ -8,11 +8,13 @@ def test_vote_status_code(client):
     winner_id = options[0]["id"]
     loser_id = options[1]["id"]
 
-    vote_response = client.post(f"/api/vote?winner_id={winner_id}&loser_id={loser_id}")
+    vote_response = client.post("/api/vote", json={
+        "winner_id": winner_id,
+        "loser_id": loser_id
+    })
 
     assert vote_response.status_code == 200
     assert vote_response.json()["message"] == "レートを更新しました"
-
 
 @pytest.mark.usefixtures("fruit_theme")
 def test_vote_rating_update(client):
@@ -26,7 +28,10 @@ def test_vote_rating_update(client):
         for opt in options
     }
 
-    client.post(f"/api/vote?winner_id={winner_id}&loser_id={loser_id}")
+    client.post("/api/vote", json={
+        "winner_id": winner_id,
+        "loser_id": loser_id
+    })
 
     updated = client.get("/api/themes").json()[0]["options"]
     after_ratings = {
@@ -41,7 +46,6 @@ def test_vote_rating_update(client):
 
     assert round(after_ratings[winner_id], 2) == expected_winner
     assert round(after_ratings[loser_id], 2) == expected_loser
-
 
 def test_update_elo_calculation():
     winner, loser = update_elo(1500, 1500)
