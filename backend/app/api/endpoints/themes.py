@@ -5,10 +5,9 @@ from typing import List
 
 from app.db.models.theme import Theme
 from app.db.models.option import Option
-from app.schemas.theme import ThemeCreate, ThemeRead
+from app.schemas.theme import ThemeCreate, ThemeRead, VoteRequest
 from app.db.session import get_db
 
-# prefixは空にしておく
 router = APIRouter()
 
 @router.post("")
@@ -16,7 +15,7 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
     try:
         theme_orm = Theme(title=theme.title)
         db.add(theme_orm)
-        db.flush()  # ← theme_orm.id を確定させる
+        db.flush()
 
         for opt in theme.options:
             db.add(Option(label=opt.label, rating=opt.rating, theme_id=theme_orm.id))
@@ -30,3 +29,50 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=List[ThemeRead])
 def list_themes(db: Session = Depends(get_db)):
     return db.query(Theme).all()
+
+@router.get("/{id}", response_model=ThemeRead)
+def get_theme(id: int, db: Session = Depends(get_db)):
+    theme = db.query(Theme).filter(Theme.id == id).first()
+    if not theme:
+        raise HTTPException(status_code=404, detail="Theme not found")
+    return theme
+
+@router.post("/{id}/vote")
+def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
+    try:
+        theme = db.query(Theme).filter(Theme.id == id).first()
+        if not theme:
+            raise HTTPException(status_code=404, detail="Theme not found")
+
+        options = theme.options
+        winners = []
+        losers = []
+        for opt in options:
+            if opt.id == request.selected_option_id:
+                winners.append(opt)
+            else:
+                losers.append(opt)
+
+        if not winners or not losers:
+            raise HTTPException(status_code=400, detail="選択肢の構造が不正です")
+
+        winner = winners[0]
+        loser = losers[0]
+
+        Option.update_elo_ratings(winner=winner, loser=loser)
+
+        db.commit()
+        return {"status": "ok"}
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{id}")
+def delete_theme(id: int, db: Session = Depends(get_db)):
+    theme = db.query(Theme).filter(Theme.id == id).first()
+    if not theme:
+        raise HTTPException(status_code=404, detail="Theme not found")
+
+    db.delete(theme)
+    db.commit()
+    return {"status": "deleted"}
