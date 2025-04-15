@@ -61,6 +61,20 @@ services:
       timeout: 5s
       retries: 10
 
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    depends_on:
+      test-db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./backend/.env.test:/app/.env.test
+    env_file:
+      - backend/.env.test
+    command: ./entrypoint.test.sh
+
 volumes:
   postgres_data:
   test_postgres_data:

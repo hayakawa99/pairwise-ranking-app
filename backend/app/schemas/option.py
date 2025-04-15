@@ -4,11 +4,12 @@ from pydantic import BaseModel
 class OptionRead(BaseModel):
     id: int
     label: str
-    rating: Optional[float]  # ← float を Optional[float] に緩和
+    rating: Optional[float]
 
     class Config:
-        from_attributes = True  # ✅ Pydantic v2用設定
-        
+
+        from_attributes = True
+
 
 class OptionCreate(BaseModel):
     label: str
