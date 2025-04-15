@@ -6,7 +6,7 @@ class OptionRead(BaseModel):
     rating: float
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class OptionCreate(BaseModel):
     label: str
