@@ -59,21 +59,22 @@
   background-color: #f3f4f6;
 }
 
-/* ✅ 無効時にゆっくり点滅（見た目そのまま） */
-.option:disabled {
-  animation: slow-blink 1.5s infinite ease-in-out;
+/* ✅ 押下不可状態：ゆっくり点滅 */
+.waiting {
+  animation: blink 1.6s ease-in-out infinite;
   cursor: not-allowed;
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.6);
+  color: #111827;
 }
 
-@keyframes slow-blink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+@keyframes blink {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
 }
 
+/* ✅ 押下可能時：点灯アニメーション */
 .enabled {
   animation: fade-in 0.4s ease-in;
 }
