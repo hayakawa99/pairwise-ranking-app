@@ -42,7 +42,7 @@
   font-size: 1.1rem;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
   flex: 1 1 45%;
   max-width: 300px;
@@ -55,8 +55,38 @@
 
 .option:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
   background-color: #f3f4f6;
+}
+
+/* ✅ 無効時にゆっくり点滅（見た目そのまま） */
+.option:disabled {
+  animation: slow-blink 1.5s infinite ease-in-out;
+  cursor: not-allowed;
+}
+
+@keyframes slow-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.enabled {
+  animation: fade-in 0.4s ease-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .vs {
