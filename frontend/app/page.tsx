@@ -1,3 +1,4 @@
+// frontend/app/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -17,9 +18,7 @@ export default function MainPage() {
     const fetchThemes = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch themes");
-        }
+        if (!res.ok) throw new Error("Failed to fetch themes");
         const data = await res.json();
         setThemes(data);
       } catch (error) {
@@ -33,18 +32,8 @@ export default function MainPage() {
 
   return (
     <main className={styles.container}>
-      <h1 className={styles.heading}>Pairwise Ranking</h1>
-
-      {/* ✅ 管理者用ボタンは非表示にする（または一時的にコメントアウト） */}
-      {/* <button
-        className={styles.createButton}
-        onClick={() => router.push("/admin/create-topic")}
-      >
-        お題作成
-      </button> */}
-
+      <h1 className={styles.heroTitle}>HIKAKING</h1>
       {error && <p className={styles.error}>{error}</p>}
-
       <h2 className={styles.subHeading}>お題一覧</h2>
       <div className={styles.themeList}>
         {themes.length > 0 ? (

@@ -1,28 +1,29 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Theme, Option } from '@types';
-import styles from './RankingPage.module.css';
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Theme, Option } from "@types";
+import styles from "./RankingPage.module.css";
 
 export default function RankingPage() {
   const [theme, setTheme] = useState<Theme | null>(null);
   const [voteCounts, setVoteCounts] = useState<Map<number, number>>(new Map());
+  const [loserCounts, setLoserCounts] = useState<Map<number, number>>(new Map());
   const searchParams = useSearchParams();
   const router = useRouter();
   const themeId = searchParams.get("themeId");
 
   useEffect(() => {
-    if (!themeId) return;
+    if (!themeId || typeof themeId !== "string") return;
 
     const voted = sessionStorage.getItem(`voted-theme-${themeId}`);
     const votedOptionsRaw = sessionStorage.getItem(`voted-options-${themeId}`);
+    const votedLosersRaw = sessionStorage.getItem(`voted-losers-${themeId}`);
 
     if (!voted) {
       router.replace(`/theme/${themeId}`);
       return;
     }
 
-    // ✅ 複数回の投票履歴読み込み
     if (votedOptionsRaw) {
       try {
         const parsed: number[] = JSON.parse(votedOptionsRaw);
@@ -36,17 +37,34 @@ export default function RankingPage() {
       }
     }
 
+    if (votedLosersRaw) {
+      try {
+        const parsed: number[] = JSON.parse(votedLosersRaw);
+        const counts = new Map<number, number>();
+        parsed.forEach(id => {
+          counts.set(id, (counts.get(id) || 0) + 1);
+        });
+        setLoserCounts(counts);
+      } catch (err) {
+        console.warn("敗者履歴の解析に失敗しました", err);
+      }
+    }
+
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes/${themeId}`)
       .then(res => res.json())
       .then(setTheme)
-      .catch(err => console.error('ランキング取得失敗', err));
+      .catch(err => console.error("ランキング取得失敗", err));
   }, [themeId, router]);
 
   if (!theme) return <p>Loading...</p>;
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>{theme.title} のランキング</h1>
+      <h1 className={styles.heading}>
+        {theme.title}
+        <br />
+        ランキング
+      </h1>
 
       <div className={styles.backButtonWrapper}>
         <button onClick={() => router.push("/")} className={styles.backButton}>
@@ -68,22 +86,26 @@ export default function RankingPage() {
                 const rankIcon =
                   index === 0 ? "🥇" :
                   index === 1 ? "🥈" :
-                  index === 2 ? "🥉" : null;
+                  index === 2 ? "🥉" : `${index + 1}`;
 
                 const count = voteCounts.get(option.id) || 0;
-                const votedClass =
-                  count >= 5 ? styles.votedStrong :
-                  count >= 2 ? styles.votedMid : "";
+                const lossCount = loserCounts.get(option.id) || 0;
+
+                let votedClass = "";
+                if (count >= 5) votedClass = styles.votedStrong;
+                else if (count >= 2) votedClass = styles.votedMid;
+                else if (count === 1) votedClass = styles.voted1;
+
+                // ✅ 2回以上負けた場合のみ赤くする
+                const loweredClass = lossCount >= 2 ? styles.lowered : "";
 
                 return (
-                  <div key={option.id} className={`${styles.optionCard} ${rankClass} ${votedClass}`}>
-                    {rankIcon && <div className={styles.rankIcon}>{rankIcon}</div>}
+                  <div
+                    key={option.id}
+                    className={`${styles.optionCard} ${rankClass} ${votedClass} ${loweredClass}`}
+                  >
+                    <div className={styles.rankIcon}>{rankIcon}</div>
                     <div className={styles.optionLabel}>{option.label}</div>
-                    {index >= 3 && (
-                      <div className={styles.optionMeta}>
-                        <span className={styles.rankText}>#{index + 1}</span>
-                      </div>
-                    )}
                   </div>
                 );
               })}
