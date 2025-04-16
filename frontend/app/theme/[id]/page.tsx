@@ -5,17 +5,16 @@ import { Theme, Option } from "@types";
 import styles from "./ThemePage.module.css";
 
 const ThemePage = () => {
-  const { id } = useParams();
+  const { id } = useParams() as { id: string };
   const router = useRouter();
   const [theme, setTheme] = useState<Theme | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [remainingPairs, setRemainingPairs] = useState<[Option, Option][]>([]);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
   const [hasVotedOnce, setHasVotedOnce] = useState(false);
+  const [canVote, setCanVote] = useState(false);
 
   useEffect(() => {
-    if (!id || typeof id !== "string") return;
-
     const fetchTheme = async () => {
       try {
         const res = await fetch(`/api/themes/${id}`);
@@ -54,6 +53,7 @@ const ThemePage = () => {
 
         setRemainingPairs(sampledPairs);
         setCurrentPair(sampledPairs[0]);
+        setCanVote(false);
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Error fetching theme");
@@ -63,8 +63,19 @@ const ThemePage = () => {
     fetchTheme();
   }, [id]);
 
+  useEffect(() => {
+    if (!currentPair) return;
+
+    setCanVote(false);
+    const timeout = setTimeout(() => {
+      setCanVote(true);
+    }, 3500);
+
+    return () => clearTimeout(timeout);
+  }, [currentPair]);
+
   const handleVote = async (winner: Option, loser: Option) => {
-    if (!id || typeof id !== "string") return;
+    if (!canVote) return;
 
     try {
       const res = await fetch(`/api/vote`, {
@@ -79,20 +90,27 @@ const ThemePage = () => {
       setHasVotedOnce(true);
       sessionStorage.setItem(`voted-theme-${id}`, "1");
 
-      // ✅ 安全な投票履歴記録
       const key = `voted-options-${id}`;
       let updated: number[] = [];
-
       try {
         const prev = sessionStorage.getItem(key);
         updated = prev ? JSON.parse(prev) : [];
-      } catch (e) {
-        console.warn("投票履歴の読み込みに失敗しました", e);
+      } catch {
         updated = [];
       }
-
-      updated.push(Number(winner.id));
+      updated.push(winner.id);
       sessionStorage.setItem(key, JSON.stringify(updated));
+
+      const loserKey = `voted-losers-${id}`;
+      let loserHistory: number[] = [];
+      try {
+        const prevLosers = sessionStorage.getItem(loserKey);
+        loserHistory = prevLosers ? JSON.parse(prevLosers) : [];
+      } catch {
+        loserHistory = [];
+      }
+      loserHistory.push(loser.id);
+      sessionStorage.setItem(loserKey, JSON.stringify(loserHistory));
 
       if (nextPairs.length > 0) {
         setRemainingPairs(nextPairs);
@@ -118,11 +136,19 @@ const ThemePage = () => {
       <p className={styles.subtitle}>あなたならどっち？</p>
 
       <div className={styles.options}>
-        <button onClick={() => handleVote(optionA, optionB)} className={styles.option}>
+        <button
+          onClick={() => handleVote(optionA, optionB)}
+          className={`${styles.option} ${canVote ? styles.enabled : ""}`}
+          disabled={!canVote}
+        >
           {optionA.label}
         </button>
         <span className={styles.vs}>vs</span>
-        <button onClick={() => handleVote(optionB, optionA)} className={styles.option}>
+        <button
+          onClick={() => handleVote(optionB, optionA)}
+          className={`${styles.option} ${canVote ? styles.enabled : ""}`}
+          disabled={!canVote}
+        >
           {optionB.label}
         </button>
       </div>
