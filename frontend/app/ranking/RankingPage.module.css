@@ -53,10 +53,9 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
-/* 各ランクカード */
 .optionCard {
   display: flex;
   align-items: flex-start;
@@ -73,16 +72,15 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
-/* ランク番号 */
 .rankIcon {
   font-size: 1.4rem;
   font-weight: 700;
   min-width: 2.5rem;
   text-align: center;
-  color: #3b82f6;
+  color: #6b7280; /* デフォルトグレー、メダルで上書き */
 }
 
-/* 1〜3位：メダルに変換 */
+/* メダル色の上書き */
 .rank-1 .rankIcon {
   color: #f59e0b;
 }
@@ -93,7 +91,6 @@
   color: #c084fc;
 }
 
-/* 本文テキスト */
 .optionLabel {
   font-size: 1.05rem;
   color: #111827;
@@ -103,7 +100,22 @@
   flex-grow: 1;
 }
 
-/* 投票回数による強調 */
+.optionMeta {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-left: auto;
+  text-align: right;
+}
+
+.rankText {
+  font-weight: bold;
+}
+
+/* ✅ 投票回数に応じた色の変化 */
+.voted1 {
+  background-color: #e0f2fe;
+  border: 2px solid #93c5fd;
+}
 
 .votedMid {
   background-color: #dbeafe;
@@ -115,11 +127,8 @@
   border: 2px solid #3b82f6;
 }
 
-/* 順位テキスト（4位以降） */
-.optionMeta {
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-.rankText {
-  font-weight: bold;
+/* ✅ 大きく下げたときに表示される色（2回以上負け） */
+.lowered {
+  background-color: #ffe4e6;
+  border: 2px solid #fb7185;
 }
