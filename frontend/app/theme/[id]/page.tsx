@@ -9,115 +9,109 @@ const ThemePage = () => {
   const router = useRouter();
   const [theme, setTheme] = useState<Theme | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [remainingPairs, setRemainingPairs] = useState<[Option, Option][]>([]);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
   const [hasVotedOnce, setHasVotedOnce] = useState(false);
   const [canVote, setCanVote] = useState(false);
 
-  useEffect(() => {
-    const fetchTheme = async () => {
-      try {
-        const res = await fetch(`/api/themes/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch theme");
-        const data = await res.json();
-        setTheme(data);
+  const fetchTheme = async () => {
+    try {
+      const res = await fetch(`/api/themes/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch theme");
+      const data = await res.json();
+      setTheme(data);
 
-        const options = data.options;
-        const pairs: [Option, Option][] = [];
-        for (let i = 0; i < options.length; i++) {
-          for (let j = i + 1; j < options.length; j++) {
-            pairs.push([options[i], options[j]]);
-          }
+      const options = data.options;
+      if (!Array.isArray(options) || options.length < 2) return;
+
+      const optionsWithStats = options.map((opt) => ({
+        ...opt,
+        rating: typeof opt.rating === "number" ? opt.rating : 1500,
+        shown_count: typeof opt.shown_count === "number" ? opt.shown_count : 0,
+      }));
+
+      const weightsA = optionsWithStats.map((opt) => {
+        const visibility = 1 / (opt.shown_count + 1);
+        const bonus = 1 + (opt.rating - 1500) / 3000;
+        return visibility * bonus;
+      });
+      const totalA = weightsA.reduce((a, b) => a + b, 0);
+      if (totalA === 0) throw new Error("選択肢Aの重みが全て0です");
+
+      let accA = 0;
+      const randA = Math.random() * totalA;
+      let option1: Option | null = null;
+      for (let i = 0; i < optionsWithStats.length; i++) {
+        accA += weightsA[i];
+        if (randA <= accA) {
+          option1 = optionsWithStats[i];
+          break;
         }
-
-        const weightedPairs = pairs.map(pair => {
-          const diff = Math.abs(pair[0].rating - pair[1].rating);
-          return { pair, weight: 1 / (diff + 1) };
-        });
-
-        const sampledPairs: [Option, Option][] = [];
-        const used = new Set<number>();
-        while (sampledPairs.length < weightedPairs.length) {
-          const total = weightedPairs.reduce((acc, e, i) => used.has(i) ? acc : acc + e.weight, 0);
-          let r = Math.random() * total;
-          for (let i = 0; i < weightedPairs.length; i++) {
-            if (used.has(i)) continue;
-            r -= weightedPairs[i].weight;
-            if (r <= 0) {
-              sampledPairs.push(weightedPairs[i].pair);
-              used.add(i);
-              break;
-            }
-          }
-        }
-
-        setRemainingPairs(sampledPairs);
-        setCurrentPair(sampledPairs[0]);
-        setCanVote(false);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError("Error fetching theme");
       }
-    };
+      if (!option1) throw new Error("選択肢Aの選出に失敗しました");
 
-    fetchTheme();
+      const others = optionsWithStats.filter((opt) => opt.id !== option1!.id);
+      const weightsB = others.map((opt) => 1 / (Math.abs(opt.rating - option1!.rating) + 1));
+      const totalB = weightsB.reduce((a, b) => a + b, 0);
+      if (totalB === 0) throw new Error("選択肢Bの重みが全て0です");
+
+      let accB = 0;
+      const randB = Math.random() * totalB;
+      let option2: Option | null = null;
+      for (let i = 0; i < others.length; i++) {
+        accB += weightsB[i];
+        if (randB <= accB) {
+          option2 = others[i];
+          break;
+        }
+      }
+      if (!option2) throw new Error("選択肢Bの選出に失敗しました");
+
+      setCurrentPair([option1, option2]);
+      setCanVote(false);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Error fetching theme");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchTheme();
   }, [id]);
 
   useEffect(() => {
     if (!currentPair) return;
-
     setCanVote(false);
-    const timeout = setTimeout(() => {
-      setCanVote(true);
-    }, 3500);
-
+    const timeout = setTimeout(() => setCanVote(true), 4500);
     return () => clearTimeout(timeout);
   }, [currentPair]);
 
   const handleVote = async (winner: Option, loser: Option) => {
     if (!canVote) return;
-
     try {
-      const res = await fetch(`/api/vote`, {
+      const res = await fetch("/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ winner_id: winner.id, loser_id: loser.id }),
       });
-
       if (!res.ok) throw new Error("Failed to submit vote");
 
-      const nextPairs = remainingPairs.slice(1);
       setHasVotedOnce(true);
       sessionStorage.setItem(`voted-theme-${id}`, "1");
 
-      const key = `voted-options-${id}`;
-      let updated: number[] = [];
-      try {
-        const prev = sessionStorage.getItem(key);
-        updated = prev ? JSON.parse(prev) : [];
-      } catch {
-        updated = [];
-      }
-      updated.push(winner.id);
-      sessionStorage.setItem(key, JSON.stringify(updated));
+      const winKey = `voted-options-${id}`;
+      const loseKey = `voted-losers-${id}`;
 
-      const loserKey = `voted-losers-${id}`;
-      let loserHistory: number[] = [];
       try {
-        const prevLosers = sessionStorage.getItem(loserKey);
-        loserHistory = prevLosers ? JSON.parse(prevLosers) : [];
-      } catch {
-        loserHistory = [];
-      }
-      loserHistory.push(loser.id);
-      sessionStorage.setItem(loserKey, JSON.stringify(loserHistory));
+        const prev = JSON.parse(sessionStorage.getItem(winKey) || "[]");
+        sessionStorage.setItem(winKey, JSON.stringify([...prev, winner.id]));
+      } catch {}
 
-      if (nextPairs.length > 0) {
-        setRemainingPairs(nextPairs);
-        setCurrentPair(nextPairs[0]);
-      } else {
-        router.push(`/ranking?themeId=${id}`);
-      }
+      try {
+        const prev = JSON.parse(sessionStorage.getItem(loseKey) || "[]");
+        sessionStorage.setItem(loseKey, JSON.stringify([...prev, loser.id]));
+      } catch {}
+
+      await fetchTheme();
     } catch (err) {
       console.error("Vote error:", err);
       setError("Error submitting vote");
@@ -138,7 +132,7 @@ const ThemePage = () => {
       <div className={styles.options}>
         <button
           onClick={() => handleVote(optionA, optionB)}
-          className={`${styles.option} ${canVote ? styles.enabled : ""}`}
+          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
           disabled={!canVote}
         >
           {optionA.label}
@@ -146,7 +140,7 @@ const ThemePage = () => {
         <span className={styles.vs}>vs</span>
         <button
           onClick={() => handleVote(optionB, optionA)}
-          className={`${styles.option} ${canVote ? styles.enabled : ""}`}
+          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
           disabled={!canVote}
         >
           {optionB.label}
