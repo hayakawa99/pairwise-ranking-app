@@ -10,28 +10,39 @@ from app.db.session import get_db
 
 router = APIRouter()
 
+
 @router.post("")
 def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
+    """
+    新規テーマを登録する。
+    Google ログイン済みフロントエンドから渡された `user_email` をそのまま保存。
+    """
     try:
-        theme_orm = Theme(title=theme.title)
+        # user_email を追加
+        theme_orm = Theme(title=theme.title, user_email=theme.user_email)
         db.add(theme_orm)
-        db.flush()
+        db.flush()  # theme_orm.id を確定させる
 
+        # 選択肢を登録
         for opt in theme.options:
-            db.add(Option(label=opt.label, rating=opt.rating, theme_id=theme_orm.id))
+            db.add(
+                Option(
+                    label=opt.label,
+                    rating=opt.rating,
+                    theme_id=theme_orm.id,
+                )
+            )
 
         db.commit()
-        return {"status": "ok"}
+        return {"status": "ok", "id": theme_orm.id}
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("")
+
+@router.get("", response_model=List[ThemeRead])
 def list_themes(db: Session = Depends(get_db)):
     themes = db.query(Theme).options(joinedload(Theme.options)).all()
-    print("テーマ数:", len(themes))
-    for t in themes:
-        print("ID:", t.id, "タイトル:", t.title, "選択肢:", [o.label for o in t.options])
     return themes
 
 
@@ -42,8 +53,12 @@ def get_theme(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Theme not found")
     return theme
 
+
 @router.post("/{id}/vote")
 def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
+    """
+    勝敗を受け取り、Elo レーティングを更新する。
+    """
     try:
         theme = db.query(Theme).filter(Theme.id == id).first()
         if not theme:
@@ -71,6 +86,7 @@ def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.delete("/{id}")
 def delete_theme(id: int, db: Session = Depends(get_db)):
