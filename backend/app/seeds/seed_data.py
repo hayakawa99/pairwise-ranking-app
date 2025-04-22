@@ -120,7 +120,7 @@ def seed():
         db.flush()
 
         for label in theme_data["options"]:
-            db.add(Option(label=label, rating=1500.0, wins=0, losses=0, shown_count=0, theme_id=theme.id))
+            db.add(Option(label=label, theme_id=theme.id))
 
         print(f"テーマ「{theme_data['title']}」と {len(theme_data['options'])} 件の選択肢を登録します。")
 

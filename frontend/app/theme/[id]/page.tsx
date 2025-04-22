@@ -25,13 +25,14 @@ const ThemePage = () => {
 
       const optionsWithStats = options.map((opt) => ({
         ...opt,
-        rating: typeof opt.rating === "number" ? opt.rating : 1500,
-        shown_count: typeof opt.shown_count === "number" ? opt.shown_count : 0,
+        mu: opt.trueskill_mu ?? 25,
+        shown_count: opt.shown_count,
       }));
 
       const weightsA = optionsWithStats.map((opt) => {
         const visibility = 1 / (opt.shown_count + 1);
-        const bonus = 1 + (opt.rating - 1500) / 3000;
+        //TODO bonus のベースラインが 25 なので適宜調整してください
+        const bonus = 1 + (opt.mu - 25) / 50;
         return visibility * bonus;
       });
       const totalA = weightsA.reduce((a, b) => a + b, 0);
@@ -50,7 +51,9 @@ const ThemePage = () => {
       if (!option1) throw new Error("選択肢Aの選出に失敗しました");
 
       const others = optionsWithStats.filter((opt) => opt.id !== option1!.id);
-      const weightsB = others.map((opt) => 1 / (Math.abs(opt.rating - option1!.rating) + 1));
+      const weightsB = others.map(
+        (opt) => 1 / (Math.abs(opt.mu - option1!.mu) + 1)
+      );
       const totalB = weightsB.reduce((a, b) => a + b, 0);
       if (totalB === 0) throw new Error("選択肢Bの重みが全て0です");
 
@@ -132,7 +135,9 @@ const ThemePage = () => {
       <div className={styles.options}>
         <button
           onClick={() => handleVote(optionA, optionB)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optionA.label}
@@ -140,7 +145,9 @@ const ThemePage = () => {
         <span className={styles.vs}>vs</span>
         <button
           onClick={() => handleVote(optionB, optionA)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optionB.label}
@@ -149,7 +156,10 @@ const ThemePage = () => {
 
       {hasVotedOnce && (
         <div className={styles.result}>
-          <button onClick={() => router.push(`/ranking?themeId=${id}`)} className={styles.resultButton}>
+          <button
+            onClick={() => router.push(`/ranking?themeId=${id}`)}
+            className={styles.resultButton}
+          >
             ランキングを見る
           </button>
         </div>
@@ -161,7 +171,11 @@ const ThemePage = () => {
         </button>
       </div>
 
-      <img src="/simaenaga2.png" alt="シマエナガ" className={styles.character} />
+      <img
+        src="/simaenaga2.png"
+        alt="シマエナガ"
+        className={styles.character}
+      />
     </main>
   );
 };

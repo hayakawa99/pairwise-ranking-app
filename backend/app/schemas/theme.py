@@ -5,7 +5,7 @@ from .option import OptionRead, OptionCreate
 class ThemeRead(BaseModel):
     id: int
     title: str
-    options: Optional[List[OptionRead]]  # ← List → Optional[List]
+    options: Optional[List[OptionRead]]
 
     class Config:
         from_attributes = True
