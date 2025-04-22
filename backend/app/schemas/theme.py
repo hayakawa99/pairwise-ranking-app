@@ -12,6 +12,7 @@ class ThemeRead(BaseModel):
 
 class ThemeCreate(BaseModel):
     title: str
+    user_email: str                    # ← 追加
     options: List[OptionCreate]
 
 class VoteRequest(BaseModel):

@@ -1,128 +1,138 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Theme, Option } from "@types";
-import styles from "./ThemePage.module.css";
+"use client"
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { Theme, Option } from "@types"
+import styles from "./ThemePage.module.css"
 
 const ThemePage = () => {
-  const { id } = useParams() as { id: string };
-  const router = useRouter();
-  const [theme, setTheme] = useState<Theme | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
-  const [hasVotedOnce, setHasVotedOnce] = useState(false);
-  const [canVote, setCanVote] = useState(false);
+  const { id } = useParams() as { id: string }
+  const router = useRouter()
+  const { data: session, status } = useSession()
+
+  const [theme, setTheme] = useState<Theme | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null)
+  const [hasVotedOnce, setHasVotedOnce] = useState(false)
+  const [canVote, setCanVote] = useState(false)
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (!session) {
+      router.replace("/")  // 未ログイン時のリダイレクト先
+    }
+  }, [session, status])
 
   const fetchTheme = async () => {
     try {
-      const res = await fetch(`/api/themes/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch theme");
-      const data = await res.json();
-      setTheme(data);
+      const res = await fetch(`/api/themes/${id}`)
+      if (!res.ok) throw new Error("Failed to fetch theme")
+      const data = await res.json()
+      setTheme(data)
 
-      const options = data.options;
-      if (!Array.isArray(options) || options.length < 2) return;
+      const options = data.options
+      if (!Array.isArray(options) || options.length < 2) return
 
       const optionsWithStats = options.map((opt) => ({
         ...opt,
         rating: typeof opt.rating === "number" ? opt.rating : 1500,
         shown_count: typeof opt.shown_count === "number" ? opt.shown_count : 0,
-      }));
+      }))
 
       const weightsA = optionsWithStats.map((opt) => {
-        const visibility = 1 / (opt.shown_count + 1);
-        const bonus = 1 + (opt.rating - 1500) / 3000;
-        return visibility * bonus;
-      });
-      const totalA = weightsA.reduce((a, b) => a + b, 0);
-      if (totalA === 0) throw new Error("選択肢Aの重みが全て0です");
+        const visibility = 1 / (opt.shown_count + 1)
+        const bonus = 1 + (opt.rating - 1500) / 3000
+        return visibility * bonus
+      })
+      const totalA = weightsA.reduce((a, b) => a + b, 0)
+      if (totalA === 0) throw new Error("選択肢Aの重みが全て0です")
 
-      let accA = 0;
-      const randA = Math.random() * totalA;
-      let option1: Option | null = null;
+      let accA = 0
+      const randA = Math.random() * totalA
+      let option1: Option | null = null
       for (let i = 0; i < optionsWithStats.length; i++) {
-        accA += weightsA[i];
+        accA += weightsA[i]
         if (randA <= accA) {
-          option1 = optionsWithStats[i];
-          break;
+          option1 = optionsWithStats[i]
+          break
         }
       }
-      if (!option1) throw new Error("選択肢Aの選出に失敗しました");
+      if (!option1) throw new Error("選択肢Aの選出に失敗しました")
 
-      const others = optionsWithStats.filter((opt) => opt.id !== option1!.id);
-      const weightsB = others.map((opt) => 1 / (Math.abs(opt.rating - option1!.rating) + 1));
-      const totalB = weightsB.reduce((a, b) => a + b, 0);
-      if (totalB === 0) throw new Error("選択肢Bの重みが全て0です");
+      const others = optionsWithStats.filter((opt) => opt.id !== option1!.id)
+      const weightsB = others.map((opt) => 1 / (Math.abs(opt.rating - option1!.rating) + 1))
+      const totalB = weightsB.reduce((a, b) => a + b, 0)
+      if (totalB === 0) throw new Error("選択肢Bの重みが全て0です")
 
-      let accB = 0;
-      const randB = Math.random() * totalB;
-      let option2: Option | null = null;
+      let accB = 0
+      const randB = Math.random() * totalB
+      let option2: Option | null = null
       for (let i = 0; i < others.length; i++) {
-        accB += weightsB[i];
+        accB += weightsB[i]
         if (randB <= accB) {
-          option2 = others[i];
-          break;
+          option2 = others[i]
+          break
         }
       }
-      if (!option2) throw new Error("選択肢Bの選出に失敗しました");
+      if (!option2) throw new Error("選択肢Bの選出に失敗しました")
 
-      setCurrentPair([option1, option2]);
-      setCanVote(false);
+      setCurrentPair([option1, option2])
+      setCanVote(false)
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Error fetching theme");
+      console.error("Fetch error:", err)
+      setError("Error fetching theme")
     }
-  };
+  }
 
   useEffect(() => {
-    if (id) fetchTheme();
-  }, [id]);
+    if (id) fetchTheme()
+  }, [id])
 
   useEffect(() => {
-    if (!currentPair) return;
-    setCanVote(false);
-    const timeout = setTimeout(() => setCanVote(true), 4500);
-    return () => clearTimeout(timeout);
-  }, [currentPair]);
+    if (!currentPair) return
+    setCanVote(false)
+    const timeout = setTimeout(() => setCanVote(true), 4500)
+    return () => clearTimeout(timeout)
+  }, [currentPair])
 
   const handleVote = async (winner: Option, loser: Option) => {
-    if (!canVote) return;
+    if (!canVote) return
     try {
       const res = await fetch("/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ winner_id: winner.id, loser_id: loser.id }),
-      });
-      if (!res.ok) throw new Error("Failed to submit vote");
+      })
+      if (!res.ok) throw new Error("Failed to submit vote")
 
-      setHasVotedOnce(true);
-      sessionStorage.setItem(`voted-theme-${id}`, "1");
+      setHasVotedOnce(true)
+      sessionStorage.setItem(`voted-theme-${id}`, "1")
 
-      const winKey = `voted-options-${id}`;
-      const loseKey = `voted-losers-${id}`;
+      const winKey = `voted-options-${id}`
+      const loseKey = `voted-losers-${id}`
 
       try {
-        const prev = JSON.parse(sessionStorage.getItem(winKey) || "[]");
-        sessionStorage.setItem(winKey, JSON.stringify([...prev, winner.id]));
+        const prev = JSON.parse(sessionStorage.getItem(winKey) || "[]")
+        sessionStorage.setItem(winKey, JSON.stringify([...prev, winner.id]))
       } catch {}
 
       try {
-        const prev = JSON.parse(sessionStorage.getItem(loseKey) || "[]");
-        sessionStorage.setItem(loseKey, JSON.stringify([...prev, loser.id]));
+        const prev = JSON.parse(sessionStorage.getItem(loseKey) || "[]")
+        sessionStorage.setItem(loseKey, JSON.stringify([...prev, loser.id]))
       } catch {}
 
-      await fetchTheme();
+      await fetchTheme()
     } catch (err) {
-      console.error("Vote error:", err);
-      setError("Error submitting vote");
+      console.error("Vote error:", err)
+      setError("Error submitting vote")
     }
-  };
+  }
 
-  if (error) return <p className={styles.error}>{error}</p>;
-  if (!theme || !currentPair) return <p>Loading...</p>;
-  if (theme.options.length < 2) return <p>選択肢が2つ以上必要です。</p>;
+  if (error) return <p className={styles.error}>{error}</p>
+  if (!theme || !currentPair) return <p>Loading...</p>
+  if (theme.options.length < 2) return <p>選択肢が2つ以上必要です。</p>
 
-  const [optionA, optionB] = currentPair;
+  const [optionA, optionB] = currentPair
 
   return (
     <main className={styles.container}>
@@ -163,7 +173,7 @@ const ThemePage = () => {
 
       <img src="/simaenaga2.png" alt="シマエナガ" className={styles.character} />
     </main>
-  );
-};
+  )
+}
 
-export default ThemePage;
+export default ThemePage
