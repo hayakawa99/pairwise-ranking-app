@@ -4,6 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import { Theme, Option } from "@types";
 import styles from "./ThemePage.module.css";
 
+// .env.local で定義
+const DEFAULT_MU = Number(process.env.NEXT_PUBLIC_DEFAULT_MU ?? 25);
+const BONUS_DIVISOR = Number(process.env.NEXT_PUBLIC_BONUS_DIVISOR ?? 50);
+const VOTING_COOLDOWN = Number(
+  process.env.NEXT_PUBLIC_VOTING_COOLDOWN_MS ?? 300
+);
+
 const ThemePage = () => {
   const { id } = useParams() as { id: string };
   const router = useRouter();
@@ -23,15 +30,17 @@ const ThemePage = () => {
       const options = data.options;
       if (!Array.isArray(options) || options.length < 2) return;
 
+      // trueskill_mu がないときは DEFAULT_MU を使う
       const optionsWithStats = options.map((opt) => ({
         ...opt,
-        rating: typeof opt.rating === "number" ? opt.rating : 1500,
-        shown_count: typeof opt.shown_count === "number" ? opt.shown_count : 0,
+        mu: opt.trueskill_mu ?? DEFAULT_MU,
+        shown_count: opt.shown_count,
       }));
 
+      // A 選択肢の重み = (1 / (shown_count + 1)) × (1 + (mu - DEFAULT_MU) / BONUS_DIVISOR)
       const weightsA = optionsWithStats.map((opt) => {
         const visibility = 1 / (opt.shown_count + 1);
-        const bonus = 1 + (opt.rating - 1500) / 3000;
+        const bonus = 1 + (opt.mu - DEFAULT_MU) / BONUS_DIVISOR;
         return visibility * bonus;
       });
       const totalA = weightsA.reduce((a, b) => a + b, 0);
@@ -49,8 +58,11 @@ const ThemePage = () => {
       }
       if (!option1) throw new Error("選択肢Aの選出に失敗しました");
 
-      const others = optionsWithStats.filter((opt) => opt.id !== option1!.id);
-      const weightsB = others.map((opt) => 1 / (Math.abs(opt.rating - option1!.rating) + 1));
+      // B 選択肢は mu の差が小さいほど選ばれやすい
+      const others = optionsWithStats.filter((opt) => opt.id !== option1.id);
+      const weightsB = others.map(
+        (opt) => 1 / (Math.abs(opt.mu - option1.mu) + 1)
+      );
       const totalB = weightsB.reduce((a, b) => a + b, 0);
       if (totalB === 0) throw new Error("選択肢Bの重みが全て0です");
 
@@ -81,7 +93,8 @@ const ThemePage = () => {
   useEffect(() => {
     if (!currentPair) return;
     setCanVote(false);
-    const timeout = setTimeout(() => setCanVote(true), 4500);
+    // VOTING_COOLDOWN ミリ秒後に再度投票可能にする
+    const timeout = setTimeout(() => setCanVote(true), VOTING_COOLDOWN);
     return () => clearTimeout(timeout);
   }, [currentPair]);
 
@@ -100,16 +113,13 @@ const ThemePage = () => {
 
       const winKey = `voted-options-${id}`;
       const loseKey = `voted-losers-${id}`;
-
-      try {
-        const prev = JSON.parse(sessionStorage.getItem(winKey) || "[]");
-        sessionStorage.setItem(winKey, JSON.stringify([...prev, winner.id]));
-      } catch {}
-
-      try {
-        const prev = JSON.parse(sessionStorage.getItem(loseKey) || "[]");
-        sessionStorage.setItem(loseKey, JSON.stringify([...prev, loser.id]));
-      } catch {}
+      const prevWins = JSON.parse(sessionStorage.getItem(winKey) || "[]");
+      const prevLosses = JSON.parse(sessionStorage.getItem(loseKey) || "[]");
+      sessionStorage.setItem(winKey, JSON.stringify([...prevWins, winner.id]));
+      sessionStorage.setItem(
+        loseKey,
+        JSON.stringify([...prevLosses, loser.id])
+      );
 
       await fetchTheme();
     } catch (err) {
@@ -132,7 +142,9 @@ const ThemePage = () => {
       <div className={styles.options}>
         <button
           onClick={() => handleVote(optionA, optionB)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optionA.label}
@@ -140,7 +152,9 @@ const ThemePage = () => {
         <span className={styles.vs}>vs</span>
         <button
           onClick={() => handleVote(optionB, optionA)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optionB.label}
@@ -149,7 +163,10 @@ const ThemePage = () => {
 
       {hasVotedOnce && (
         <div className={styles.result}>
-          <button onClick={() => router.push(`/ranking?themeId=${id}`)} className={styles.resultButton}>
+          <button
+            onClick={() => router.push(`/ranking?themeId=${id}`)}
+            className={styles.resultButton}
+          >
             ランキングを見る
           </button>
         </div>
@@ -161,7 +178,11 @@ const ThemePage = () => {
         </button>
       </div>
 
-      <img src="/simaenaga2.png" alt="シマエナガ" className={styles.character} />
+      <img
+        src="/simaenaga2.png"
+        alt="シマエナガ"
+        className={styles.character}
+      />
     </main>
   );
 };
