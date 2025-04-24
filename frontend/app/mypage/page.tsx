@@ -10,6 +10,7 @@ type Theme = {
   id: number
   title: string
   created_at: string
+  user_email: string // 追加
 }
 
 type VoteRecord = {
@@ -24,7 +25,6 @@ export default function MyPage() {
   const { data: session } = useSession()
   const [createdThemes, setCreatedThemes] = useState<Theme[]>([])
   const [voteHistory, setVoteHistory] = useState<VoteRecord[]>([])
-
   const email = session?.user?.email
 
   useEffect(() => {
@@ -53,6 +53,24 @@ export default function MyPage() {
       })
   }, [email])
 
+  const handleDelete = async (id: number) => {
+    const confirmed = confirm("このお題を削除してもよろしいですか？")
+    if (!confirmed) return
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes/${id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        setCreatedThemes(prev => prev.filter(theme => theme.id !== id))
+      } else {
+        console.error("削除に失敗しました")
+      }
+    } catch (err) {
+      console.error("削除中にエラーが発生しました", err)
+    }
+  }
+
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>マイページ</h1>
@@ -68,7 +86,12 @@ export default function MyPage() {
         <ul className={styles.list}>
           {createdThemes.map(theme => (
             <li key={theme.id} className={styles.listItem}>
-              {theme.title}（{new Date(theme.created_at).toLocaleString()}）
+              <span>{theme.title}（{new Date(theme.created_at).toLocaleString()}）</span>
+              {session?.user?.email === theme.user_email && (
+                <button className={styles.deleteButton} onClick={() => handleDelete(theme.id)}>
+                  削除
+                </button>
+              )}
             </li>
           ))}
         </ul>
