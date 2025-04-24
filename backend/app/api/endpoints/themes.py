@@ -10,7 +10,6 @@ from app.db.session import get_db
 
 router = APIRouter()
 
-
 @router.post("")
 def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
     """
@@ -18,17 +17,15 @@ def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
     Google ログイン済みフロントエンドから渡された `user_email` をそのまま保存。
     """
     try:
-        # user_email を追加
         theme_orm = Theme(title=theme.title, user_email=theme.user_email)
         db.add(theme_orm)
-        db.flush()  # theme_orm.id を確定させる
+        db.flush()
 
-        # 選択肢を登録
         for opt in theme.options:
             db.add(
                 Option(
                     label=opt.label,
-                    rating=opt.rating,
+                    trueskill_mu=opt.rating,  # ← rating は trueskill_mu に代入
                     theme_id=theme_orm.id,
                 )
             )
@@ -56,22 +53,14 @@ def get_theme(id: int, db: Session = Depends(get_db)):
 
 @router.post("/{id}/vote")
 def vote(id: int, request: VoteRequest, db: Session = Depends(get_db)):
-    """
-    勝敗を受け取り、Elo レーティングを更新する。
-    """
     try:
         theme = db.query(Theme).filter(Theme.id == id).first()
         if not theme:
             raise HTTPException(status_code=404, detail="Theme not found")
 
         options = theme.options
-        winners = []
-        losers = []
-        for opt in options:
-            if opt.id == request.selected_option_id:
-                winners.append(opt)
-            else:
-                losers.append(opt)
+        winners = [opt for opt in options if opt.id == request.selected_option_id]
+        losers = [opt for opt in options if opt.id != request.selected_option_id]
 
         if not winners or not losers:
             raise HTTPException(status_code=400, detail="選択肢の構造が不正です")

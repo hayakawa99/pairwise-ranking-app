@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import styles from "./CreateThemePage.module.css"
@@ -13,6 +13,12 @@ const CreateThemePage = () => {
   const [options, setOptions] = useState(["", ""])
   const [newOption, setNewOption] = useState("")
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (status !== "loading" && !session?.user?.email) {
+      router.push("/")
+    }
+  }, [status, session, router])
 
   if (status === "loading") {
     return <p>読み込み中...</p>
@@ -48,8 +54,11 @@ const CreateThemePage = () => {
       options: options.map((opt) => ({ label: opt, rating: 1500 })),
     }
 
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`
+    console.log("APIに送信するURL:", apiUrl)
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`, {
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTheme),
