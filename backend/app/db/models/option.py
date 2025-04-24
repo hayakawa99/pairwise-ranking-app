@@ -14,7 +14,7 @@ class Option(Base):
     losses = Column(Integer, default=0, nullable=False)
     shown_count = Column(Integer, default=0, nullable=False)
 
-    trueskill_mu    = Column(
+    trueskill_mu = Column(
         Float, nullable=False,
         default=settings.trueskill_mu
     )
@@ -27,3 +27,7 @@ class Option(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     theme = relationship("Theme", back_populates="options")
+
+    # --- Voteとのリレーション（逆参照）---
+    winner_votes = relationship("Vote", back_populates="winner_option", foreign_keys="Vote.winner_option_id")
+    loser_votes = relationship("Vote", back_populates="loser_option", foreign_keys="Vote.loser_option_id")

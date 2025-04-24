@@ -11,16 +11,16 @@ def create_app() -> FastAPI:
     def startup():
         init_db()
 
+    # ✅ CORSミドルウェアを正しく構成（開発中のため * を許可）
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["*"],  # 開発中は *、本番では正確なドメインを指定
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-    # ここで "/api" を prefix として付与するので、
-    # api_router側に "/themes" があれば最終的に "/api/themes" となります
+    # ✅ 全APIに "/api" プレフィックスを付けてルーティング
     app.include_router(api_router, prefix="/api")
 
     return app

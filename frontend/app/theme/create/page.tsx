@@ -1,10 +1,11 @@
 "use client"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import styles from "./AdminCreateTopicPage.module.css"
+import styles from "./CreateThemePage.module.css"
 
-const AdminCreateTopicPage = () => {
+const CreateThemePage = () => {
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -14,15 +15,13 @@ const AdminCreateTopicPage = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const allowedPaths = ["/admin/create-topic"]
-    const isAdmin = typeof window !== "undefined" && allowedPaths.includes(window.location.pathname)
-    if (!isAdmin) {
+    if (status !== "loading" && !session?.user?.email) {
       router.push("/")
     }
-  }, [router])
+  }, [status, session, router])
 
   if (status === "loading") {
-    return <p>Loading...</p>
+    return <p>読み込み中...</p>
   }
 
   const handleOptionChange = (index: number, value: string) => {
@@ -55,8 +54,11 @@ const AdminCreateTopicPage = () => {
       options: options.map((opt) => ({ label: opt, rating: 1500 })),
     }
 
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`
+    console.log("APIに送信するURL:", apiUrl)
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`, {
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTheme),
@@ -64,7 +66,7 @@ const AdminCreateTopicPage = () => {
       if (res.ok) {
         router.push("/")
       } else {
-        setError("テーマの送信に失敗しました")
+        setError("お題の作成に失敗しました")
       }
     } catch (error) {
       setError("通信エラーが発生しました")
@@ -74,26 +76,26 @@ const AdminCreateTopicPage = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>Create Topic (Admin Only)</h1>
+      <h1 className={styles.heading}>お題を作成する</h1>
 
       {error && <p className={styles.error}>{error}</p>}
 
-      <label className={styles.label}>Title</label>
+      <label className={styles.label}>タイトル</label>
       <input
         className={styles.inputField}
         type="text"
-        placeholder="Title"
+        placeholder="お題のタイトルを入力"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <label className={styles.label}>Options</label>
+      <label className={styles.label}>選択肢</label>
       {options.map((option, index) => (
         <div key={index} className={styles.optionRow}>
           <input
             className={styles.inputField}
             type="text"
-            placeholder="Option"
+            placeholder={`選択肢${index + 1}`}
             value={option}
             onChange={(e) => handleOptionChange(index, e.target.value)}
           />
@@ -104,22 +106,22 @@ const AdminCreateTopicPage = () => {
         <input
           className={styles.inputField}
           type="text"
-          placeholder="Add option"
+          placeholder="選択肢を追加"
           value={newOption}
           onChange={(e) => setNewOption(e.target.value)}
         />
-        <button onClick={handleAddOption}>Add option</button>
+        <button onClick={handleAddOption}>追加</button>
       </div>
 
       <button className={styles.submitButton} onClick={handleSubmit}>
-        Create
+        作成
       </button>
 
       <div className={styles.backButtonWrapper}>
-        <button className={styles.backButton} onClick={() => router.push("/")}>戻る</button>
+        <button className={styles.backButton} onClick={() => router.push("/")}>トップに戻る</button>
       </div>
     </div>
   )
 }
 
-export default AdminCreateTopicPage
+export default CreateThemePage

@@ -1,5 +1,5 @@
-from typing import Optional
 from pydantic import BaseModel
+from typing import Optional
 
 class OptionRead(BaseModel):
     id: int
@@ -13,3 +13,4 @@ class OptionRead(BaseModel):
 
 class OptionCreate(BaseModel):
     label: str
+    rating: float 
