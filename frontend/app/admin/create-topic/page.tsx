@@ -6,7 +6,7 @@ import styles from "./AdminCreateTopicPage.module.css"
 
 const AdminCreateTopicPage = () => {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
 
   const [title, setTitle] = useState("")
   const [options, setOptions] = useState(["", ""])
@@ -20,6 +20,10 @@ const AdminCreateTopicPage = () => {
       router.push("/")
     }
   }, [router])
+
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options]
@@ -47,7 +51,7 @@ const AdminCreateTopicPage = () => {
 
     const newTheme = {
       title,
-      user_email: session.user.email, // ← ここを追加
+      user_email: session.user.email,
       options: options.map((opt) => ({ label: opt, rating: 1500 })),
     }
 

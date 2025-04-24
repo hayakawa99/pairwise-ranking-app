@@ -26,6 +26,8 @@ services:
       - /app/node_modules
     working_dir: /app
     command: npm run dev
+    env_file:
+      - ./frontend/.env.local  # ✅ ← これを追加
 
   db:
     image: postgres:15

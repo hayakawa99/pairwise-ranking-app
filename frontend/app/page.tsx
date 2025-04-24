@@ -1,4 +1,3 @@
-// frontend/app/page.tsx
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -12,9 +11,10 @@ type Theme = {
 
 export default function MainPage() {
   const router = useRouter()
+  const { data: session, status } = useSession()
+
   const [themes, setThemes] = useState<Theme[]>([])
   const [error, setError] = useState<string | null>(null)
-  const { data: session } = useSession()
 
   useEffect(() => {
     const fetchThemes = async () => {
@@ -31,6 +31,10 @@ export default function MainPage() {
 
     fetchThemes()
   }, [])
+
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
 
   return (
     <main className={styles.container}>
