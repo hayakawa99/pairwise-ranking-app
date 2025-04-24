@@ -5,27 +5,37 @@ from typing import List
 
 from app.db.models.theme import Theme
 from app.db.models.option import Option
+from app.db.models.user import User
 from app.schemas.theme import ThemeCreate, ThemeRead, VoteRequest
 from app.db.session import get_db
 
 router = APIRouter()
 
+
 @router.post("")
 def create_theme(theme: ThemeCreate, db: Session = Depends(get_db)):
     """
     新規テーマを登録する。
-    Google ログイン済みフロントエンドから渡された `user_email` をそのまま保存。
+    Google ログイン済みフロントエンドから渡された `user_email` を元に user_id を取得して保存。
     """
     try:
-        theme_orm = Theme(title=theme.title, user_email=theme.user_email)
+        user = db.query(User).filter(User.email == theme.user_email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+        theme_orm = Theme(
+            title=theme.title,
+            user_email=theme.user_email,
+            user_id=user.id
+        )
         db.add(theme_orm)
-        db.flush()
+        db.flush()  # theme_orm.id を確定させる
 
         for opt in theme.options:
             db.add(
                 Option(
                     label=opt.label,
-                    trueskill_mu=opt.rating,  # ← rating は trueskill_mu に代入
+                    trueskill_mu=opt.rating,
                     theme_id=theme_orm.id,
                 )
             )
