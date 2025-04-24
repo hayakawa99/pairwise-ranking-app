@@ -1,0 +1,16 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VSCode
+.vscode/
+
+# Next.js build
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
