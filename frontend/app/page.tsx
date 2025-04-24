@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession, signIn, signOut } from "next-auth/react"
+import Link from "next/link"
 import styles from "./page.module.css"
 
 type Theme = {
@@ -22,7 +23,13 @@ export default function MainPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`)
         if (!res.ok) throw new Error("Failed to fetch themes")
         const data = await res.json()
-        setThemes(data)
+
+        if (Array.isArray(data)) {
+          setThemes(data)
+        } else {
+          setThemes([])
+          console.error("Expected array but got:", data)
+        }
       } catch (error) {
         setError("Error fetching themes")
         console.error("Fetch error:", error)
@@ -40,14 +47,22 @@ export default function MainPage() {
     <main className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.heroTitle}>HIKAKING</h1>
-        {session ? (
-          <button className={styles.authButton} onClick={() => signOut()}>ログアウト</button>
-        ) : (
-          <button className={styles.authButton} onClick={() => signIn("google")}>ログイン</button>
-        )}
+        <div style={{ display: "flex", gap: "1rem" }}>
+          {session && (
+            <Link href="/mypage">
+              <button className={styles.authButton}>マイページ</button>
+            </Link>
+          )}
+          {session ? (
+            <button className={styles.authButton} onClick={() => signOut()}>ログアウト</button>
+          ) : (
+            <button className={styles.authButton} onClick={() => signIn("google")}>ログイン</button>
+          )}
+        </div>
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
+
       <h2 className={styles.subHeading}>お題一覧</h2>
       <div className={styles.themeList}>
         {themes.length > 0 ? (
