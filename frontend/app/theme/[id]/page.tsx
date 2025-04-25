@@ -1,87 +1,76 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Theme, Option } from "@types";
+import API_BASE from "@/lib/apiBase";
 import styles from "./ThemePage.module.css";
 
-// .env.local で定義
+/* ---------- 型 ---------- */
+type ApiOption = Omit<Option, "trueskill_mu" | "shown_count"> & {
+  trueskill_mu: number | null;
+  shown_count: number | null;
+};
+
+interface OptionWithStats extends Option {
+  mu: number;
+  shown_count: number;
+}
+/* -------------------------------------------------- */
+
 const DEFAULT_MU = Number(process.env.NEXT_PUBLIC_DEFAULT_MU ?? 25);
 const BONUS_DIVISOR = Number(process.env.NEXT_PUBLIC_BONUS_DIVISOR ?? 50);
 const VOTING_COOLDOWN = Number(
   process.env.NEXT_PUBLIC_VOTING_COOLDOWN_MS ?? 300
 );
 
-const ThemePage = () => {
+export default function ThemePage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const { data: session } = useSession();
+
   const [theme, setTheme] = useState<Theme | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
   const [hasVotedOnce, setHasVotedOnce] = useState(false);
   const [canVote, setCanVote] = useState(false);
 
+  /* -------------------- テーマ取得 -------------------- */
   const fetchTheme = async () => {
     try {
-      const res = await fetch(`/api/themes/${id}`);
+      const res = await fetch(`${API_BASE}/api/themes/${id}`);
       if (!res.ok) throw new Error("Failed to fetch theme");
-      const data = await res.json();
+      const data: Theme & { options?: ApiOption[] } = await res.json();
       setTheme(data);
 
-      const options = data.options;
-      if (!Array.isArray(options) || options.length < 2) return;
+      const options: ApiOption[] = data.options ?? [];
+      if (options.length < 2) return;
 
-      // trueskill_mu がないときは DEFAULT_MU を使う
-      const optionsWithStats = options.map((opt) => ({
+      const stats: OptionWithStats[] = options.map((opt) => ({
         ...opt,
+        trueskill_mu: opt.trueskill_mu ?? DEFAULT_MU,
         mu: opt.trueskill_mu ?? DEFAULT_MU,
-        shown_count: opt.shown_count,
+        shown_count: opt.shown_count ?? 0,
       }));
 
-      // A 選択肢の重み = (1 / (shown_count + 1)) × (1 + (mu - DEFAULT_MU) / BONUS_DIVISOR)
-      const weightsA = optionsWithStats.map((opt) => {
-        const visibility = 1 / (opt.shown_count + 1);
-        const bonus = 1 + (opt.mu - DEFAULT_MU) / BONUS_DIVISOR;
+      /* --------- A側抽選 --------- */
+      const weightsA = stats.map((o) => {
+        const visibility = 1 / (o.shown_count + 1);
+        const bonus = 1 + (o.mu - DEFAULT_MU) / BONUS_DIVISOR;
         return visibility * bonus;
       });
-      const totalA = weightsA.reduce((a, b) => a + b, 0);
-      if (totalA === 0) throw new Error("選択肢Aの重みが全て0です");
-
-      let accA = 0;
-      const randA = Math.random() * totalA;
-      let option1: Option | null = null;
-      for (let i = 0; i < optionsWithStats.length; i++) {
-        accA += weightsA[i];
-        if (randA <= accA) {
-          option1 = optionsWithStats[i];
-          break;
-        }
-      }
+      const option1 = weightedSample(stats, weightsA);
       if (!option1) throw new Error("選択肢Aの選出に失敗しました");
 
-      // B 選択肢は mu の差が小さいほど選ばれやすい
-      const others = optionsWithStats.filter((opt) => opt.id !== option1.id);
-      const weightsB = others.map(
-        (opt) => 1 / (Math.abs(opt.mu - option1.mu) + 1)
-      );
-      const totalB = weightsB.reduce((a, b) => a + b, 0);
-      if (totalB === 0) throw new Error("選択肢Bの重みが全て0です");
-
-      let accB = 0;
-      const randB = Math.random() * totalB;
-      let option2: Option | null = null;
-      for (let i = 0; i < others.length; i++) {
-        accB += weightsB[i];
-        if (randB <= accB) {
-          option2 = others[i];
-          break;
-        }
-      }
+      /* --------- B側抽選 --------- */
+      const others = stats.filter((o) => o.id !== option1.id);
+      const weightsB = others.map((o) => 1 / (Math.abs(o.mu - option1.mu) + 1));
+      const option2 = weightedSample(others, weightsB);
       if (!option2) throw new Error("選択肢Bの選出に失敗しました");
 
       setCurrentPair([option1, option2]);
-      setCanVote(false);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error(err);
       setError("Error fetching theme");
     }
   };
@@ -90,43 +79,67 @@ const ThemePage = () => {
     if (id) fetchTheme();
   }, [id]);
 
+  /* -------------------- クールダウン -------------------- */
   useEffect(() => {
     if (!currentPair) return;
     setCanVote(false);
-    const timeout = setTimeout(() => setCanVote(true), VOTING_COOLDOWN);
-    return () => clearTimeout(timeout);
+    const t = setTimeout(() => setCanVote(true), VOTING_COOLDOWN);
+    return () => clearTimeout(t);
   }, [currentPair]);
 
+  /* -------------------- ローカル投票履歴 -------------------- */
+  const recordLocalVote = (winnerId: number, loserId: number) => {
+    sessionStorage.setItem(`voted-theme-${id}`, "1");
+
+    const winRaw = sessionStorage.getItem(`voted-options-${id}`);
+    const wins: number[] = winRaw ? JSON.parse(winRaw) : [];
+    wins.push(winnerId);
+    sessionStorage.setItem(`voted-options-${id}`, JSON.stringify(wins));
+
+    const loseRaw = sessionStorage.getItem(`voted-losers-${id}`);
+    const loses: number[] = loseRaw ? JSON.parse(loseRaw) : [];
+    loses.push(loserId);
+    sessionStorage.setItem(`voted-losers-${id}`, JSON.stringify(loses));
+  };
+
+  /* -------------------- 投票処理 -------------------- */
   const handleVote = async (winner: Option, loser: Option) => {
-    if (!canVote) return;
+    if (!canVote || !session?.user?.email) return;
     try {
-      const res = await fetch("/api/vote", {
+      const res = await fetch(`${API_BASE}/api/themes/${id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ winner_id: winner.id, loser_id: loser.id }),
+        body: JSON.stringify({
+          winner_id: winner.id,
+          loser_id: loser.id,
+          user_email: session.user.email,
+        }),
       });
       if (!res.ok) throw new Error("Failed to submit vote");
 
+      recordLocalVote(winner.id, loser.id);
       setHasVotedOnce(true);
-      sessionStorage.setItem(`voted-theme-${id}`, "1");
-
-      const winKey = `voted-options-${id}`;
-      const loseKey = `voted-losers-${id}`;
-      const prevWins = JSON.parse(sessionStorage.getItem(winKey) || "[]");
-      const prevLosses = JSON.parse(sessionStorage.getItem(loseKey) || "[]");
-      sessionStorage.setItem(winKey, JSON.stringify([...prevWins, winner.id]));
-      sessionStorage.setItem(
-        loseKey,
-        JSON.stringify([...prevLosses, loser.id])
-      );
-
       await fetchTheme();
     } catch (err) {
-      console.error("Vote error:", err);
+      console.error(err);
       setError("Error submitting vote");
     }
   };
 
+  /* -------------------- ユーティリティ -------------------- */
+  const weightedSample = <T,>(arr: T[], weights: number[]): T | null => {
+    const total = weights.reduce((a, b) => a + b, 0);
+    if (total === 0) return null;
+    let acc = 0;
+    const r = Math.random() * total;
+    for (let i = 0; i < arr.length; i++) {
+      acc += weights[i];
+      if (r <= acc) return arr[i];
+    }
+    return null;
+  };
+
+  /* -------------------- 表示 -------------------- */
   if (error) return <p className={styles.error}>{error}</p>;
   if (!theme || !currentPair) return <p>Loading...</p>;
   if (theme.options.length < 2) return <p>選択肢が2つ以上必要です。</p>;
@@ -160,17 +173,10 @@ const ThemePage = () => {
         </button>
       </div>
 
-      <div className={styles.characterWrapper}>
-        <img
-          src="/simaenaga2.png"
-          alt="シマエナガ"
-          className={styles.character}
-        />
-      </div>
-
       {hasVotedOnce && (
         <div className={styles.result}>
           <button
+            type="button"
             onClick={() => router.push(`/ranking?themeId=${id}`)}
             className={styles.resultButton}
           >
@@ -180,12 +186,14 @@ const ThemePage = () => {
       )}
 
       <div className={styles.back}>
-        <button onClick={() => router.push("/")} className={styles.backButton}>
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className={styles.backButton}
+        >
           トップページに戻る
         </button>
       </div>
     </main>
   );
-};
-
-export default ThemePage;
+}

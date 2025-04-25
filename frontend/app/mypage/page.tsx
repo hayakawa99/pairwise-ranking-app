@@ -1,112 +1,135 @@
-"use client"
+"use client";
 
-import React from "react"
-import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import styles from "./Mypage.module.css"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import styles from "./Mypage.module.css";
 
 type Theme = {
-  id: number
-  title: string
-  created_at: string
-  user_email: string // 追加
-}
+  id: number;
+  title: string;
+  created_at: string;
+  user_email: string;
+};
 
 type VoteRecord = {
-  theme_id: number
-  theme_title: string
-  winner_label: string
-  loser_label: string
-  created_at: string
-}
+  theme_id: number;
+  theme_title: string;
+  winner_label: string;
+  loser_label: string;
+  created_at: string;
+};
 
 export default function MyPage() {
-  const { data: session } = useSession()
-  const [createdThemes, setCreatedThemes] = useState<Theme[]>([])
-  const [voteHistory, setVoteHistory] = useState<VoteRecord[]>([])
-  const email = session?.user?.email
+  const { data: session } = useSession();
+  const [createdThemes, setCreatedThemes] = useState<Theme[]>([]);
+  const [voteHistory, setVoteHistory] = useState<VoteRecord[]>([]);
+  const email = session?.user?.email;
 
+  /* -------------------- データ取得 -------------------- */
   useEffect(() => {
-    if (!email) return
+    if (!email) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/themes?email=${email}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setCreatedThemes(data)
-        } else {
-          setCreatedThemes([])
-          console.error("createdThemes is not array:", data)
-        }
-      })
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/votes?email=${email}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setVoteHistory(data)
-        } else {
-          setVoteHistory([])
-          console.error("voteHistory is not array:", data)
-        }
-      })
-  }, [email])
+    fetch(`${base}/api/user/themes?email=${encodeURIComponent(email)}`)
+      .then((res) => res.json())
+      .then((d) => setCreatedThemes(Array.isArray(d) ? d : []));
 
+    fetch(`${base}/api/user/votes?email=${encodeURIComponent(email)}`)
+      .then((res) => res.json())
+      .then((d) => setVoteHistory(Array.isArray(d) ? d : []));
+  }, [email]);
+
+  /* -------------------- 作成お題削除 -------------------- */
   const handleDelete = async (id: number) => {
-    const confirmed = confirm("このお題を削除してもよろしいですか？")
-    if (!confirmed) return
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes/${id}`, {
+    if (!confirm("このお題を削除してよろしいですか？")) return;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes/${id}`,
+      {
         method: "DELETE",
-      })
-      if (res.ok) {
-        setCreatedThemes(prev => prev.filter(theme => theme.id !== id))
-      } else {
-        console.error("削除に失敗しました")
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_email: email }),
       }
-    } catch (err) {
-      console.error("削除中にエラーが発生しました", err)
+    );
+    if (res.ok) {
+      setCreatedThemes((prev) => prev.filter((t) => t.id !== id));
+    } else {
+      console.error("削除失敗", await res.text());
     }
-  }
+  };
+
+  /* -------------------- 遊んだお題をグループ化 -------------------- */
+  const playedThemes = Array.from(
+    voteHistory.reduce<Map<number, { id: number; title: string }>>(
+      (m, v) => m.set(v.theme_id, { id: v.theme_id, title: v.theme_title }),
+      new Map()
+    ).values()
+  );
 
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>マイページ</h1>
 
+      {/* お題作成リンク */}
       <section className={styles.section}>
         <Link href="/theme/create" className={styles.linkHeading}>
           <h2 className={styles.sectionHeading}>お題を作成する →</h2>
         </Link>
       </section>
 
+      {/* 自分が作成したお題 */}
       <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>自分が作成したお題</h2>
-        <ul className={styles.list}>
-          {createdThemes.map(theme => (
-            <li key={theme.id} className={styles.listItem}>
-              <span>{theme.title}（{new Date(theme.created_at).toLocaleString()}）</span>
-              {session?.user?.email === theme.user_email && (
-                <button className={styles.deleteButton} onClick={() => handleDelete(theme.id)}>
+        <details>
+          <summary className={styles.summary}>
+            自分が作成したお題 ({createdThemes.length})
+          </summary>
+          <ul className={styles.list}>
+            {createdThemes.map((t) => (
+              <li key={t.id} className={styles.listItem}>
+                <span>
+                  {t.title}（
+                  {new Date(t.created_at).toLocaleString()}
+                  ）
+                </span>
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => handleDelete(t.id)}
+                >
                   削除
                 </button>
-              )}
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </details>
       </section>
 
+      {/* 自分が遊んだお題（アコーディオン） */}
       <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>自分が遊んだお題</h2>
-        <ul className={styles.list}>
-          {voteHistory.map((vote, idx) => (
-            <li key={idx} className={styles.listItem}>
-              <strong>{vote.theme_title}</strong>：{vote.winner_label} ＞ {vote.loser_label}（{new Date(vote.created_at).toLocaleString()}）
-            </li>
-          ))}
-        </ul>
+        <details>
+          <summary className={styles.summary}>
+            自分が遊んだお題 ({playedThemes.length})
+          </summary>
+          <ul className={styles.list}>
+            {playedThemes.map((t) => (
+              <li key={t.id} className={styles.listItem}>
+                <Link
+                  href={`/ranking?themeId=${t.id}&mine=1`}
+                  className={styles.playedLink}
+                >
+                  {t.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </details>
       </section>
+
+      <div className={styles.backButtonWrapper}>
+        <Link href="/">
+          <button className={styles.backButton}>トップページに戻る</button>
+        </Link>
+      </div>
     </div>
-  )
+  );
 }
