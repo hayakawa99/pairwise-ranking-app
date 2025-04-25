@@ -51,11 +51,12 @@ const CreateThemePage = () => {
     const newTheme = {
       title,
       user_email: session.user.email,
-      options: options.map((opt) => ({ label: opt, rating: 1500 })),
+      options: options.map((opt) => ({ label: opt })), // ★ rating を削除
     }
 
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`
     console.log("APIに送信するURL:", apiUrl)
+    console.log("送信データ:", JSON.stringify(newTheme, null, 2))
 
     try {
       const res = await fetch(apiUrl, {

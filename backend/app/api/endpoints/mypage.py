@@ -64,6 +64,7 @@ def get_user_created_themes(email: str = Query(...), db: Session = Depends(get_d
             "id": theme.id,
             "title": theme.title,
             "created_at": theme.created_at,
+            "user_email": theme.user_email,  # ← 追加
         }
         for theme in themes
     ]
