@@ -30,16 +30,18 @@ def get_user_votes(email: str = Query(...), db: Session = Depends(get_db)):
         .all()
     )
 
-    return [
-        {
+    result = []
+    for vote in votes:
+        if not vote.theme or not vote.winner_option or not vote.loser_option:
+            continue
+        result.append({
             "theme_id": vote.theme.id,
             "theme_title": vote.theme.title,
             "winner_label": vote.winner_option.label,
             "loser_label": vote.loser_option.label,
             "created_at": vote.created_at,
-        }
-        for vote in votes
-    ]
+        })
+    return result
 
 
 @router.get("/user/themes")
@@ -64,6 +66,7 @@ def get_user_created_themes(email: str = Query(...), db: Session = Depends(get_d
             "id": theme.id,
             "title": theme.title,
             "created_at": theme.created_at,
+            "user_email": theme.user_email,
         }
         for theme in themes
     ]
