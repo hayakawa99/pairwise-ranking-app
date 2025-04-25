@@ -1,3 +1,40 @@
+.characterWrapper {
+  position: relative;
+  text-align: center;
+  margin: 2rem 0;
+  z-index: 1;
+}
+
+.speechBubble {
+  position: absolute;
+  bottom: calc(100% - 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+  max-width: 200px;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.speechBubble::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 12px 8px 0 8px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
 .container {
   padding: 4rem 1.5rem 6rem;
   background-color: #f9fafb;
@@ -59,7 +96,6 @@
   background-color: #f3f4f6;
 }
 
-/* ✅ 押下不可状態：ゆっくり点滅 */
 .waiting {
   animation: blink 1.6s ease-in-out infinite;
   cursor: not-allowed;
@@ -80,7 +116,6 @@
   }
 }
 
-/* ✅ 押下可能時：点灯アニメーション */
 .enabled {
   animation: fade-in 0.4s ease-in;
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSimaenagaLine } from "@/hooks/useSimaenagaLine";
 import { useParams, useRouter } from "next/navigation";
 import { Theme, Option } from "@types";
 import styles from "./ThemePage.module.css";
@@ -14,6 +15,7 @@ const VOTING_COOLDOWN = Number(
 const ThemePage = () => {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const { line, refresh } = useSimaenagaLine();
   const [theme, setTheme] = useState<Theme | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
@@ -87,7 +89,10 @@ const ThemePage = () => {
   };
 
   useEffect(() => {
-    if (id) fetchTheme();
+    if (id) {
+      fetchTheme();
+      refresh();
+    }
   }, [id]);
 
   useEffect(() => {
@@ -121,6 +126,7 @@ const ThemePage = () => {
       );
 
       await fetchTheme();
+      await refresh();
     } catch (err) {
       console.error("Vote error:", err);
       setError("Error submitting vote");
@@ -161,6 +167,11 @@ const ThemePage = () => {
       </div>
 
       <div className={styles.characterWrapper}>
+        {line && (
+          <div className={styles.speechBubble}>
+            <p>{line}</p>
+          </div>
+        )}
         <img
           src="/simaenaga2.png"
           alt="シマエナガ"
