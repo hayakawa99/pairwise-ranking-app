@@ -69,9 +69,15 @@
 }
 
 @keyframes blink {
-  0% { opacity: 0.4; }
-  50% { opacity: 1; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
 /* ✅ 押下可能時：点灯アニメーション */
@@ -137,15 +143,18 @@
   background-color: #6b7280;
 }
 
+.characterWrapper {
+  text-align: center;
+  margin: 2rem 0;
+  z-index: 1;
+}
+
 .character {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  width: 68px;
+  display: inline-block;
+  width: 120px;
   height: auto;
   opacity: 0.8;
-  pointer-events: none;
-  z-index: 0;
+  margin: 0 auto;
 }
 
 @media (max-width: 640px) {
@@ -160,9 +169,11 @@
     font-size: 1rem;
   }
 
+  .characterWrapper {
+    margin: 1.5rem 0;
+  }
+
   .character {
-    width: 56px;
-    bottom: 0.5rem;
-    right: 0.5rem;
+    width: 80px;
   }
 }

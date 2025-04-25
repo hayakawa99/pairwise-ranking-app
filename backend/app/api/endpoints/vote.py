@@ -6,13 +6,14 @@ from app.db.models.vote import Vote
 from app.db.models.user import User
 from app.core.trueskill_utils import rate_1vs1
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
 
 class VoteRequest(BaseModel):
     winner_id: int
     loser_id: int
-    user_email: str  # フロントから送る（将来的には認証セッションに置換）
+    user_email: Optional[str] = None  # フロントから送る（将来的には認証セッションに置換）
 
 @router.post("/vote")
 def vote(request: VoteRequest, db: Session = Depends(get_db)):
@@ -38,19 +39,17 @@ def vote(request: VoteRequest, db: Session = Depends(get_db)):
     winner.shown_count += 1
     loser.shown_count += 1
 
-    # ユーザー取得
-    user = db.query(User).filter(User.email == request.user_email).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="認証ユーザーが登録されていません")
-
-    # 投票記録作成
     vote_record = Vote(
-        user_id=user.id,
         theme_id=winner.theme_id,
         winner_option_id=winner.id,
         loser_option_id=loser.id,
+        user_id=None,
     )
-    db.add(vote_record)
+    if request.user_email:
+        user = db.query(User).filter(User.email == request.user_email).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="認証ユーザーが登録されていません")
+        vote_record.user_id = user.id
 
     db.commit()
     return {"message": "TrueSkill を適用し、投票を記録しました"}

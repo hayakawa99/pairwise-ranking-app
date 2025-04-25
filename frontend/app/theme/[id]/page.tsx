@@ -93,7 +93,6 @@ const ThemePage = () => {
   useEffect(() => {
     if (!currentPair) return;
     setCanVote(false);
-    // VOTING_COOLDOWN ミリ秒後に再度投票可能にする
     const timeout = setTimeout(() => setCanVote(true), VOTING_COOLDOWN);
     return () => clearTimeout(timeout);
   }, [currentPair]);
@@ -161,6 +160,14 @@ const ThemePage = () => {
         </button>
       </div>
 
+      <div className={styles.characterWrapper}>
+        <img
+          src="/simaenaga2.png"
+          alt="シマエナガ"
+          className={styles.character}
+        />
+      </div>
+
       {hasVotedOnce && (
         <div className={styles.result}>
           <button
@@ -177,12 +184,6 @@ const ThemePage = () => {
           トップページに戻る
         </button>
       </div>
-
-      <img
-        src="/simaenaga2.png"
-        alt="シマエナガ"
-        className={styles.character}
-      />
     </main>
   );
 };
