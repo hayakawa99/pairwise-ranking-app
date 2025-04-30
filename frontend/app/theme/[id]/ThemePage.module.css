@@ -2,37 +2,37 @@
   position: relative;
   text-align: center;
   margin: 2rem 0;
-  z-index: 1;
 }
 
 .speechBubble {
   position: absolute;
-  bottom: calc(100% - 8px);
+  bottom: calc(100% + 2px);
   left: 50%;
   transform: translateX(-50%);
-  background: #fff;
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 2;
-  max-width: 200px;
-  white-space: pre-wrap;
-  word-break: keep-all;
-  text-align: center;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  margin-bottom: 8px;
+
+  display: inline-block;
+  padding: 10px 16px;
+  min-width: 285px;
+  max-width: 400px;
+  background: #e0edff;
+  border-radius: 15px;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
-.speechBubble::after {
+.speechBubble:before {
   content: "";
   position: absolute;
-  bottom: -12px;
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 12px 8px 0 8px;
-  border-style: solid;
-  border-color: #fff transparent transparent transparent;
+  border: 15px solid transparent;
+  border-top-color: #e0edff;
+}
+
+.speechBubble p {
+  margin: 0;
+  padding: 0;
 }
 
 .container {
@@ -176,12 +176,6 @@
 
 .backButton:hover {
   background-color: #6b7280;
-}
-
-.characterWrapper {
-  text-align: center;
-  margin: 2rem 0;
-  z-index: 1;
 }
 
 .character {
