@@ -1,3 +1,5 @@
+# backend/app/db/models/__init__.py
+
 from app.db.base import Base
 from .theme import Theme
 from .option import Option

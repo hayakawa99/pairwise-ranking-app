@@ -12,8 +12,10 @@ class ThemeRead(BaseModel):
 
 class ThemeCreate(BaseModel):
     title: str
-    user_email: str                    # ← 追加
+    user_email: str
     options: List[OptionCreate]
 
 class VoteRequest(BaseModel):
-    selected_option_id: int
+    winner_id: int
+    loser_id: int
+    user_email: Optional[str] = None  # ← 任意に変更

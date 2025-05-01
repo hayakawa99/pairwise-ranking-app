@@ -26,8 +26,10 @@ services:
       - /app/node_modules
     working_dir: /app
     command: npm run dev
+    # ← ここで .env.local を読み込むことで
+    #     NEXT_PUBLIC_API_BASE_URL がコンテナ内でも設定される
     env_file:
-      - ./frontend/.env.local  # ✅ ← これを追加
+      - ./frontend/.env.local
 
   db:
     image: postgres:15
