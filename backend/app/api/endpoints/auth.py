@@ -1,10 +1,15 @@
+# backend/app/api/endpoints/auth.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+
 from app.db.session import get_db
 from app.db.models.user import User
 
-router = APIRouter()
+router = APIRouter(
+    tags=["auth"],  # 追加: ドキュメント上の分類用タグ
+)
 
 class UserRegisterRequest(BaseModel):
     email: str

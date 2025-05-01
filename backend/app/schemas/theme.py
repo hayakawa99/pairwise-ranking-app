@@ -18,4 +18,4 @@ class ThemeCreate(BaseModel):
 class VoteRequest(BaseModel):
     winner_id: int
     loser_id: int
-    user_email: str
+    user_email: Optional[str] = None  # ← 任意に変更
