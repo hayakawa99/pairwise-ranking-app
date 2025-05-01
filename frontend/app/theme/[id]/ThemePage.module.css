@@ -1,3 +1,40 @@
+.characterWrapper {
+  position: relative;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.speechBubble {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: inline-block;
+  padding: 10px 16px;
+  min-width: 285px;
+  max-width: 400px;
+  background: #e0edff;
+  border-radius: 15px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.speechBubble:before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 15px solid transparent;
+  border-top-color: #e0edff;
+}
+
+.speechBubble p {
+  margin: 0;
+  padding: 0;
+}
+
 .container {
   padding: 4rem 1.5rem 6rem;
   background-color: #f9fafb;
@@ -59,7 +96,6 @@
   background-color: #f3f4f6;
 }
 
-/* ✅ 押下不可状態：ゆっくり点滅 */
 .waiting {
   animation: blink 1.6s ease-in-out infinite;
   cursor: not-allowed;
@@ -80,7 +116,6 @@
   }
 }
 
-/* ✅ 押下可能時：点灯アニメーション */
 .enabled {
   animation: fade-in 0.4s ease-in;
 }
@@ -141,12 +176,6 @@
 
 .backButton:hover {
   background-color: #6b7280;
-}
-
-.characterWrapper {
-  text-align: center;
-  margin: 2rem 0;
-  z-index: 1;
 }
 
 .character {

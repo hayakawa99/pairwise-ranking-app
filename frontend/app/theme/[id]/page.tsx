@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSimaenagaLine } from "@/hooks/useSimaenagaLine";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Theme, Option } from "@types";
@@ -28,8 +29,8 @@ const VOTING_COOLDOWN = Number(
 export default function ThemePage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const { line, refresh } = useSimaenagaLine();
   const { data: session } = useSession();
-
   const [theme, setTheme] = useState<Theme | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
@@ -74,7 +75,10 @@ export default function ThemePage() {
   };
 
   useEffect(() => {
-    if (id) fetchTheme();
+    if (id) {
+      fetchTheme();
+      refresh();
+    }
   }, [id]);
 
   /* 投票クールダウン */
@@ -88,10 +92,20 @@ export default function ThemePage() {
   /* ローカル投票履歴登録 */
   const recordLocalVote = (winnerId: number, loserId: number) => {
     sessionStorage.setItem(`voted-theme-${id}`, "1");
-    const wins = JSON.parse(sessionStorage.getItem(`voted-options-${id}`) || "[]") as number[];
-    const loses = JSON.parse(sessionStorage.getItem(`voted-losers-${id}`) || "[]") as number[];
-    sessionStorage.setItem(`voted-options-${id}`, JSON.stringify([...wins, winnerId]));
-    sessionStorage.setItem(`voted-losers-${id}`, JSON.stringify([...loses, loserId]));
+    const wins = JSON.parse(
+      sessionStorage.getItem(`voted-options-${id}`) || "[]"
+    ) as number[];
+    const loses = JSON.parse(
+      sessionStorage.getItem(`voted-losers-${id}`) || "[]"
+    ) as number[];
+    sessionStorage.setItem(
+      `voted-options-${id}`,
+      JSON.stringify([...wins, winnerId])
+    );
+    sessionStorage.setItem(
+      `voted-losers-${id}`,
+      JSON.stringify([...loses, loserId])
+    );
   };
 
   /* 投票処理 */
@@ -125,6 +139,7 @@ export default function ThemePage() {
       recordLocalVote(winner.id, loser.id);
       setHasVotedOnce(true);
       await fetchTheme();
+      await refresh();
     } catch (e) {
       console.error(e);
       setError("投票処理中にエラーが発生しました");
@@ -158,7 +173,9 @@ export default function ThemePage() {
       <div className={styles.options}>
         <button
           onClick={() => handleVote(optA, optB)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optA.label}
@@ -166,13 +183,26 @@ export default function ThemePage() {
         <span className={styles.vs}>vs</span>
         <button
           onClick={() => handleVote(optB, optA)}
-          className={`${styles.option} ${canVote ? styles.enabled : styles.waiting}`}
+          className={`${styles.option} ${
+            canVote ? styles.enabled : styles.waiting
+          }`}
           disabled={!canVote}
         >
           {optB.label}
         </button>
       </div>
-
+      <div className={styles.characterWrapper}>
+        {line && (
+          <div className={styles.speechBubble}>
+            <p>{line}</p>
+          </div>
+        )}
+        <img
+          src="/simaenaga2.png"
+          alt="シマエナガ"
+          className={styles.character}
+        />
+      </div>
       {hasVotedOnce && (
         <div className={styles.result}>
           <button
