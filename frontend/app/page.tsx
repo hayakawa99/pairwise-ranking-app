@@ -1,62 +1,73 @@
-"use client"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useSession, signIn, signOut } from "next-auth/react"
-import Link from "next/link"
-import styles from "./page.module.css"
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
+import styles from "./page.module.css";
 
 type Theme = {
-  id: number
-  title: string
-}
+  id: number;
+  title: string;
+};
 
 export default function MainPage() {
-  const router = useRouter()
-  const { data: session, status } = useSession()
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const [themes, setThemes] = useState<Theme[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchThemes = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`)
-        if (!res.ok) throw new Error("Failed to fetch themes")
-        const data = await res.json()
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/themes`);
+        if (!res.ok) throw new Error("Failed to fetch themes");
+        const data = await res.json();
 
         if (Array.isArray(data)) {
-          setThemes(data)
+          setThemes(data);
         } else {
-          setThemes([])
-          console.error("Expected array but got:", data)
+          setThemes([]);
+          console.error("Expected array but got:", data);
         }
       } catch (error) {
-        setError("Error fetching themes")
-        console.error("Fetch error:", error)
+        setError("Error fetching themes");
+        console.error("Fetch error:", error);
       }
-    }
+    };
 
-    fetchThemes()
-  }, [])
+    fetchThemes();
+  }, []);
 
   if (status === "loading") {
-    return <p>Loading...</p>
+    return <p>Loading...</p>;
   }
 
   return (
     <main className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.heroTitle}>HIKAKING</h1>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          {session && (
-            <Link href="/mypage">
-              <button className={styles.authButton}>マイページ</button>
-            </Link>
-          )}
+        <div className={styles.authButtons}>
           {session ? (
-            <button className={styles.authButton} onClick={() => signOut()}>ログアウト</button>
+            <>
+              <Link href="/mypage" className={styles.linkWrapper}>
+                <button className={styles.authButton}>マイページ</button>
+              </Link>
+              <button
+                className={styles.authButton}
+                onClick={() => signOut()}
+              >
+                ログアウト
+              </button>
+            </>
           ) : (
-            <button className={styles.authButton} onClick={() => signIn("google")}>ログイン</button>
+            <button
+              className={styles.authButton}
+              onClick={() => signIn("google")}
+            >
+              ログイン
+            </button>
           )}
         </div>
       </div>
@@ -80,5 +91,5 @@ export default function MainPage() {
         )}
       </div>
     </main>
-  )
+  );
 }

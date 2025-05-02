@@ -26,7 +26,6 @@ export default function MyPage() {
   const [voteHistory, setVoteHistory] = useState<VoteRecord[]>([]);
   const email = session?.user?.email;
 
-  /* -------------------- データ取得 -------------------- */
   useEffect(() => {
     if (!email) return;
 
@@ -41,7 +40,6 @@ export default function MyPage() {
       .then((d) => setVoteHistory(Array.isArray(d) ? d : []));
   }, [email]);
 
-  /* -------------------- 作成お題削除 -------------------- */
   const handleDelete = async (id: number) => {
     if (!confirm("このお題を削除してよろしいですか？")) return;
     const res = await fetch(
@@ -59,7 +57,6 @@ export default function MyPage() {
     }
   };
 
-  /* -------------------- 遊んだお題をグループ化 -------------------- */
   const playedThemes = Array.from(
     voteHistory.reduce<Map<number, { id: number; title: string }>>(
       (m, v) => m.set(v.theme_id, { id: v.theme_id, title: v.theme_title }),
@@ -68,68 +65,67 @@ export default function MyPage() {
   );
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>マイページ</h1>
+    <main className={styles.container}>
+      <div className={styles.headerRow}>
+        <h1 className={styles.heroTitle}>HIKAKING</h1>
 
-      {/* お題作成リンク */}
-      <section className={styles.section}>
-        <Link href="/theme/create" className={styles.linkHeading}>
-          <h2 className={styles.sectionHeading}>お題を作成する →</h2>
+        <Link href="/theme/create" className={styles.linkWrapper}>
+          <button className={styles.createButton}>お題を作成する</button>
         </Link>
-      </section>
+      </div>
 
-      {/* 自分が作成したお題 */}
-      <section className={styles.section}>
-        <details>
-          <summary className={styles.summary}>
-            自分が作成したお題 ({createdThemes.length})
-          </summary>
-          <ul className={styles.list}>
+      <div className={styles.sectionWrapper}>
+        <h2 className={styles.sectionHeading}>作成したお題</h2>
+        {createdThemes.length === 0 ? (
+          <p className={styles.emptyText}>作成したお題はありません。</p>
+        ) : (
+          <div className={styles.themeList}>
             {createdThemes.map((t) => (
-              <li key={t.id} className={styles.listItem}>
-                <span>
-                  {t.title}（
-                  {new Date(t.created_at).toLocaleString()}
-                  ）
-                </span>
+              <div key={t.id} className={styles.themeCard}>
+                <div className={styles.themeInfo}>
+                  <h3 className={styles.themeTitle}>{t.title}</h3>
+                  <p className={styles.themeDate}>
+                    {new Date(t.created_at).toLocaleString()}
+                  </p>
+                </div>
                 <button
                   className={styles.deleteButton}
                   onClick={() => handleDelete(t.id)}
                 >
                   削除
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
-        </details>
-      </section>
+          </div>
+        )}
+      </div>
 
-      {/* 自分が遊んだお題（アコーディオン） */}
-      <section className={styles.section}>
-        <details>
-          <summary className={styles.summary}>
-            自分が遊んだお題 ({playedThemes.length})
-          </summary>
-          <ul className={styles.list}>
+      <div className={styles.sectionWrapper}>
+        <h2 className={styles.sectionHeading}>遊んだお題</h2>
+        {playedThemes.length === 0 ? (
+          <p className={styles.emptyText}>遊んだお題はありません。</p>
+        ) : (
+          <div className={styles.themeList}>
             {playedThemes.map((t) => (
-              <li key={t.id} className={styles.listItem}>
-                <Link
-                  href={`/ranking?themeId=${t.id}&mine=1`}
-                  className={styles.playedLink}
-                >
-                  {t.title}
-                </Link>
-              </li>
+              <Link
+                key={t.id}
+                href={`/ranking?themeId=${t.id}&mine=1`}
+                className={styles.themeCardLink}
+              >
+                <div className={styles.themeCard}>
+                  <h3 className={styles.themeTitle}>{t.title}</h3>
+                </div>
+              </Link>
             ))}
-          </ul>
-        </details>
-      </section>
+          </div>
+        )}
+      </div>
 
       <div className={styles.backButtonWrapper}>
-        <Link href="/">
+        <Link href="/" className={styles.linkWrapper}>
           <button className={styles.backButton}>トップページに戻る</button>
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

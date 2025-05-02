@@ -2,17 +2,17 @@ FROM node:18
 
 WORKDIR /app
 
-# 依存ファイルだけ先にコピー（キャッシュ効かせる）
-COPY package*.json ./
+RUN apt-get update && apt-get install -y tree
 
+COPY package*.json ./
 RUN npm install
 
-# アプリ本体をコピー
 COPY . .
 
-# パスを通す（←ここ重要）
 ENV PATH=/app/node_modules/.bin:$PATH
+
+RUN tree -I 'node_modules|.next|.git' -a -L 3 > /app/directory_structure.txt
 
 EXPOSE 3000
 
-CMD ["next", "dev"]
+CMD ["npm", "run", "dev"]
