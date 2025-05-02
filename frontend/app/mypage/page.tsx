@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import styles from "./Mypage.module.css";
@@ -29,7 +29,7 @@ export default function MyPage() {
   useEffect(() => {
     if (!email) return;
 
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
     fetch(`${base}/api/user/themes?email=${encodeURIComponent(email)}`)
       .then((res) => res.json())
@@ -39,6 +39,16 @@ export default function MyPage() {
       .then((res) => res.json())
       .then((d) => setVoteHistory(Array.isArray(d) ? d : []));
   }, [email]);
+
+  // 投票履歴に基づいてユニークな「遊んだお題」を抽出（作成者かどうかは問わない）
+  const playedThemes = useMemo(() => {
+    return Array.from(
+      voteHistory.reduce<Map<number, { id: number; title: string }>>(
+        (m, v) => m.set(v.theme_id, { id: v.theme_id, title: v.theme_title }),
+        new Map()
+      ).values()
+    );
+  }, [voteHistory]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("このお題を削除してよろしいですか？")) return;
@@ -57,18 +67,10 @@ export default function MyPage() {
     }
   };
 
-  const playedThemes = Array.from(
-    voteHistory.reduce<Map<number, { id: number; title: string }>>(
-      (m, v) => m.set(v.theme_id, { id: v.theme_id, title: v.theme_title }),
-      new Map()
-    ).values()
-  );
-
   return (
     <main className={styles.container}>
       <div className={styles.headerRow}>
         <h1 className={styles.heroTitle}>HIKAKING</h1>
-
         <Link href="/theme/create" className={styles.linkWrapper}>
           <button className={styles.createButton}>お題を作成する</button>
         </Link>

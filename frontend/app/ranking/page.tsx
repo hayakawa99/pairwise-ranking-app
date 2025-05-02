@@ -103,10 +103,11 @@ export default function RankingPage() {
               const wins = winMap.get(opt.id) ?? 0;
               const loses = loseMap.get(opt.id) ?? 0;
 
+              const diff = wins - loses; // 勝ち越し数
+
               let votedCls = "";
-              if (wins >= 5) votedCls = styles.votedStrong;
-              else if (wins >= 2) votedCls = styles.votedMid;
-              else if (wins === 1) votedCls = styles.voted1;
+              if (diff >= 4) votedCls = styles.votedStrong; // 濃い青
+              else if (diff >= 2) votedCls = styles.votedMid; // 薄い青
 
               const lowered = (loses - wins) >= 2 ? styles.lowered : "";
 
