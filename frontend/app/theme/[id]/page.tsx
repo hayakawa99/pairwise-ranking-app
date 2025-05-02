@@ -124,7 +124,6 @@ export default function ThemePage() {
         ...(session?.user?.email && { user_email: session.user.email }),
       };
 
-      // ← ここを /api/themes/{id}/vote に合わせました
       const res = await fetch(`${API_BASE}/api/themes/${id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -173,9 +172,7 @@ export default function ThemePage() {
       <div className={styles.options}>
         <button
           onClick={() => handleVote(optA, optB)}
-          className={`${styles.option} ${
-            canVote ? styles.enabled : styles.waiting
-          }`}
+          className={styles.option}
           disabled={!canVote}
         >
           {optA.label}
@@ -183,9 +180,7 @@ export default function ThemePage() {
         <span className={styles.vs}>vs</span>
         <button
           onClick={() => handleVote(optB, optA)}
-          className={`${styles.option} ${
-            canVote ? styles.enabled : styles.waiting
-          }`}
+          className={styles.option}
           disabled={!canVote}
         >
           {optB.label}
