@@ -1,73 +1,121 @@
 .container {
   padding: 2rem;
+  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* トップページと同一レイアウト・スタイル */
+.headerRow {
+  width: 100%;
   max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
 }
 
-.heading {
-  font-size: 2.4rem;
-  font-weight: bold;
-  margin-bottom: 2.5rem;
-  text-align: center;
-  color: #333;
-}
-
-.section {
-  margin-bottom: 2.5rem;
-  padding: 2rem;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* ───────────── リンク見出し ───────────── */
-.sectionHeading {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #222;
-}
-
-.linkHeading {
-  text-decoration: none;
-  color: inherit;
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
-
-.linkHeading:hover {
-  transform: translateY(-2px);
-}
-
-.linkHeading:hover .sectionHeading {
-  text-decoration: underline;
-}
-
-/* ───────────── リスト ───────────── */
-.list {
-  list-style: none;
-  padding: 0;
+/* トップページで使われている heroTitle をコピー */
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #1f2937;
+  letter-spacing: 0.05em;
+  text-shadow: 2px 2px 0 #cbd5e1;
   margin: 0;
 }
 
-.listItem {
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  padding: 0.6rem 0.8rem;
-  background: #f4f4f4;
+.sectionWrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.linkWrapper {
+  text-decoration: none;
+}
+
+.createButton {
+  background-color: #343a40;
+  color: #fff;
+  border: none;
+  padding: 0.9rem 2rem;
   border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.createButton:hover {
+  background-color: #23272b;
+}
+
+.sectionHeading {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 1rem;
+  color: #777;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.themeList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.themeCard {
+  background-color: #fff;
+  padding: 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* ───────────── 削除ボタン ───────────── */
+.themeCard:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.themeInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.themeTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.4rem;
+}
+
+.themeDate {
+  font-size: 0.9rem;
+  color: #777;
+}
+
 .deleteButton {
-  margin-left: 1rem;
-  padding: 0.5rem 1rem;
   background-color: #dc3545;
   color: #fff;
   border: none;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -75,85 +123,31 @@
 }
 
 .deleteButton:hover {
-  background-color: #bb2d3b;
+  background-color: #b71c1c;
 }
 
-/* ───────────── アコーディオン ───────────── */
-.accordion,
-.accordion[open] {
-  /* UA が付与する 1px の枠線を完全に無効化 */
-  border: none !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-}
-
-.summary {
-  font-size: 1.1rem;
-  font-weight: 500;
-  background-color: #ececec;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  user-select: none;
-  margin-bottom: 1rem;
-  color: #333;
-  transition: background-color 0.2s ease;
-  outline: none;
-  border: none;
-}
-
-.summary:hover {
-  background-color: #ddd;
-}
-
-.summary:focus-visible {
-  outline: none;
-}
-
-details[open] .summary {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-/* Chrome / Safari の ▼マーカー非表示 */
-.summary::-webkit-details-marker {
-  display: none;
-}
-
-/* ───────────── 遊んだお題リンク ───────────── */
-.playedLink {
+.themeCardLink {
   text-decoration: none;
-  color: #0066cc;
-  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.playedLink:hover {
-  color: #004c99;
-  text-decoration: underline;
-  transform: translateY(-1px);
+.themeCardLink:hover .themeCard {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* ───────────── 戻るボタン ───────────── */
 .backButtonWrapper {
-  text-align: center;
   margin-top: 3rem;
+  text-align: center;
 }
 
 .backButton {
-  padding: 0.6rem 1.5rem;
-  font-size: 1rem;
   background-color: #6c757d;
-  color: #fff;
+  color: white;
   border: none;
+  padding: 0.75rem 2rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-size: 1.1rem;
+  transition: background-color 0.2s;
 }
 
 .backButton:hover {

@@ -2,14 +2,18 @@ version: "3.8"
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./frontend:/frontend
       - ./backend/.env:/app/.env
       - ./backend/.env.test:/app/.env.test
       - ./backend/entrypoint.sh:/app/entrypoint.sh
+      # - ./directory_structure.txt:/app/directory_structure.txt   # ← 削除
     depends_on:
       db:
         condition: service_healthy
@@ -18,7 +22,9 @@ services:
       - backend/.env.test
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
@@ -26,8 +32,6 @@ services:
       - /app/node_modules
     working_dir: /app
     command: npm run dev
-    # ← ここで .env.local を読み込むことで
-    #     NEXT_PUBLIC_API_BASE_URL がコンテナ内でも設定される
     env_file:
       - ./frontend/.env.local
 

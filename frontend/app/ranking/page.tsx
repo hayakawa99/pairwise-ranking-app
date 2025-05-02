@@ -15,7 +15,6 @@ export default function RankingPage() {
   const themeId = params?.get("themeId") ?? null;
   const mineMode = params?.get("mine") === "1";
 
-  /* -------------------- データ取得 -------------------- */
   useEffect(() => {
     if (!themeId) return;
 
@@ -53,7 +52,6 @@ export default function RankingPage() {
 
   if (!theme) return <p>Loading...</p>;
 
-  /* -------------------- 並べ替え -------------------- */
   const sortedOptions: Option[] = mineMode
     ? (() => {
         const opts = theme.options.filter(
@@ -67,7 +65,6 @@ export default function RankingPage() {
       })()
     : theme.options;
 
-  /* -------------------- 戻り先設定 -------------------- */
   const backHref = mineMode ? "/mypage" : "/";
   const backLabel = mineMode ? "マイページに戻る" : "トップページに戻る";
 
@@ -111,7 +108,7 @@ export default function RankingPage() {
               else if (wins >= 2) votedCls = styles.votedMid;
               else if (wins === 1) votedCls = styles.voted1;
 
-              const lowered = loses >= 2 ? styles.lowered : "";
+              const lowered = (loses - wins) >= 2 ? styles.lowered : "";
 
               return (
                 <div

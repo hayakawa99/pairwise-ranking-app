@@ -1,0 +1,165 @@
+/app
+├── .dockerignore
+├── .env
+├── .env.local
+├── .env.test
+├── .gitignore
+├── .pytest_cache
+│   ├── .gitignore
+│   ├── CACHEDIR.TAG
+│   ├── README.md
+│   └── v
+│       └── cache
+│           ├── lastfailed
+│           ├── nodeids
+│           └── stepwise
+├── .sample
+├── .venv
+│   ├── .gitignore
+│   ├── bin
+│   │   ├── Activate.ps1
+│   │   ├── activate
+│   │   ├── activate.csh
+│   │   ├── activate.fish
+│   │   ├── alembic
+│   │   ├── dotenv
+│   │   ├── fastapi
+│   │   ├── mako-render
+│   │   ├── pip
+│   │   ├── pip3
+│   │   ├── pip3.13
+│   │   ├── python -> python3.13
+│   │   ├── python3 -> python3.13
+│   │   ├── python3.13 -> /opt/homebrew/opt/python@3.13/bin/python3.13
+│   │   └── uvicorn
+│   ├── include
+│   │   └── python3.13
+│   ├── lib
+│   │   └── python3.13
+│   │       └── site-packages
+│   └── pyvenv.cfg
+├── Dockerfile
+├── Dockerfile.test
+├── README.md
+├── alembic
+│   ├── README
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions
+│       ├── 20250414_0737_50c1faa4252f_initial_schema.py
+│       ├── 20250421_0713_23fedc8164e2_drop_elo_rating_column.py
+│       ├── 20250422_0523_559483ad451b_add_user_email_to_themes.py
+│       ├── 20250424_0643_397fa3511c0d_add_votes_table.py
+│       ├── 20250424_0755_cf118a337e4d_add_users_table.py
+│       ├── 20250424_0815_5e0500673eaa_create_votes_table.py
+│       ├── 20250424_0959_b6dfaca0c28a_add_user_id_to_themes.py
+│       ├── 20250424_1012_cbe481ee3e1f_confirm_sync_after_manual_user_id.py
+│       ├── 20250424_1458_7984ace229c2_merge_heads.py
+│       └── 20250425_0504_b71eac6b3d17_create_simaenaga_lines_table.py
+├── alembic.ini
+├── app
+│   ├── api
+│   │   ├── api.py
+│   │   ├── auth
+│   │   │   └── register
+│   │   └── endpoints
+│   │       ├── auth.py
+│   │       ├── mypage.py
+│   │       ├── ranking.py
+│   │       ├── simaenaga_line.py
+│   │       ├── themes.py
+│   │       └── vote.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── ranking.py
+│   │   ├── settings.py
+│   │   └── trueskill_utils.py
+│   ├── db
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── comparison.py
+│   │   │   ├── option.py
+│   │   │   ├── simaenaga_line.py
+│   │   │   ├── theme.py
+│   │   │   ├── user.py
+│   │   │   └── vote.py
+│   │   └── session.py
+│   ├── main.py
+│   ├── mypage
+│   ├── schemas
+│   │   ├── __init__.py
+│   │   ├── option.py
+│   │   ├── simaenaga_line.py
+│   │   └── theme.py
+│   └── seeds
+│       ├── seed_data.py
+│       ├── seed_food_data.py
+│       └── seed_simaenaga.py
+├── directory_structure.txt
+├── entrypoint.sh
+├── entrypoint.test.sh
+├── requirements.txt
+└── tests
+    ├── __init__.py
+    ├── conftest.py
+    └── test_vote.py
+/frontend
+├── .DS_Store
+├── .dockerignore
+├── .env.local
+├── .gitignore
+├── Dockerfile
+├── README.md
+├── app
+│   ├── MainPage.module.css
+│   ├── error.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── mypage
+│   │   ├── MyPlayedAccordion.tsx
+│   │   ├── Mypage.module.css
+│   │   └── page.tsx
+│   ├── page.module.css
+│   ├── page.tsx
+│   ├── providers.tsx
+│   ├── ranking
+│   │   ├── RankingPage.module.css
+│   │   └── page.tsx
+│   └── theme
+│       ├── [id]
+│       │   ├── ThemePage.module.css
+│       │   └── page.tsx
+│       └── create
+│           ├── CreateThemePage.module.css
+│           └── page.tsx
+├── components
+│   └── CreateThemeForm.tsx
+├── directory_structure.txt
+├── eslint.config.mjs
+├── hooks
+│   └── useSimaenagaLine.ts
+├── lib
+│   └── apiBase.ts
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── pages
+│   └── api
+│       └── auth
+│           └── [...nextauth].ts
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── simaenaga2.png
+│   ├── vercel.svg
+│   └── window.svg
+├── tsconfig.json
+└── types
+    └── index.ts
+
+39 directories, 124 files

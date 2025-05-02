@@ -6,13 +6,14 @@ ENV PYTHONPATH=/app
 
 RUN apt-get update && apt-get install -y tree
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY alembic.ini .
-COPY ./alembic ./alembic
-COPY ./app /app
+COPY backend/alembic.ini .
+COPY backend/alembic ./backend/alembic
+COPY backend/app ./backend/app
+COPY frontend ./frontend
 
-RUN tree -I 'node_modules|__pycache__|*.pyc|.git' -a -L 3 > /app/directory_structure.txt
+RUN tree /app/backend /app/frontend -I 'node_modules|.next|__pycache__|*.pyc|.git' -a -L 4 > /app/directory_structure.txt
 
 CMD ["./entrypoint.sh"]

@@ -1,24 +1,23 @@
+/* MainPage.module.css */
 .container {
   padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  background-color: #f9f9f9;
-  min-height: 100vh;
+  background-color: #f4f4f9;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
 }
 
-/* ヘッダー領域（タイトル + ログインボタン） */
 .header {
+  width: 100%;
+  max-width: 800px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
-/* リッチなHIKAKINGタイトル */
 .heroTitle {
   font-size: 3.5rem;
   font-weight: 900;
@@ -27,27 +26,29 @@
   text-shadow: 2px 2px 0 #cbd5e1;
 }
 
-/* ログイン・ログアウトボタン */
+.authButtons {
+  display: flex;
+  gap: 1rem;
+}
+
 .authButton {
-  font-size: 0.9rem;
-  padding: 0.5rem 1rem;
-  background: #1f2937;
+  background-color: #6c757d;
   color: white;
   border: none;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.3s ease;
 }
 
 .authButton:hover {
-  background: #374151;
+  background-color: #5a6268;
 }
 
-.subHeading {
-  font-size: 1.5rem;
-  color: #444;
-  text-align: center;
-  margin-bottom: 1.5rem;
+.linkWrapper {
+  text-decoration: none;
 }
 
 .error {
@@ -56,29 +57,36 @@
   margin-top: 1rem;
 }
 
+.subHeading {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 1.5rem;
+}
+
 .themeList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
+  max-width: 600px;
 }
 
 .themeCard {
-  background-color: white;
-  padding: 1rem 1.5rem;
+  background-color: #fff;
+  padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
 }
 
 .themeCard:hover {
-  background-color: #f0f4f8;
-  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .themeTitle {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
 }
